@@ -32,6 +32,61 @@
     </form>
     <div id="message"></div>
 </div>
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const messageDiv = document.getElementById('message');
 
+    // 1. XỬ LÝ ĐĂNG NHẬP & LƯU TRẠNG THÁI (#25)
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            
+            // Lưu trạng thái đăng nhập vào localStorage dưới máy
+            localStorage.setItem('userToken', 'mock-token-123456');
+            localStorage.setItem('username', username);
+
+            messageDiv.style.color = 'green';
+            messageDiv.innerHTML = `Đăng nhập thành công! Chào ${username}.`;
+            
+            // Tải lại trang sau 1 giây để cập nhật giao diện
+            setTimeout(() => { location.reload(); }, 1000);
+        });
+    }
+
+    // 2. TỰ ĐỘNG KIỂM TRA TRẠNG THÁI KHI VÀO TRANG (#24 & #25)
+    window.addEventListener('load', function() {
+        const savedUser = localStorage.getItem('username');
+        if (savedUser) {
+            // Nếu đã có trạng thái đăng nhập, đổi form thành giao diện Đăng xuất
+            const card = document.querySelector('.login-card');
+            if (card) {
+                card.innerHTML = `
+                    <h2>FlavorMap 🍰</h2>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p>Bạn đang đăng nhập với tài khoản:</p>
+                        <strong style="color: #ff5722; font-size: 18px;">${savedUser}</strong>
+                    </div>
+                    <button id="btnLogout" class="btn" style="background: #555;">Đăng Xuất</button>
+                    <div id="message"></div>
+                `;
+
+                // 3. XỬ LÝ LOGIC ĐĂNG XUẤT (#24)
+                document.getElementById('btnLogout').addEventListener('click', function() {
+                    // Xóa trạng thái đã lưu
+                    localStorage.removeItem('userToken');
+                    localStorage.removeItem('username');
+                    
+                    const msg = document.getElementById('message');
+                    msg.style.color = 'red';
+                    msg.innerHTML = 'Đã đăng xuất thành công!';
+
+                    // Quay về màn hình đăng nhập ban đầu sau 1 giây
+                    setTimeout(() => { location.reload(); }, 1000);
+                });
+            }
+        }
+    });
+</script>
 </body>
 </html>
