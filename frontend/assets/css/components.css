@@ -1,0 +1,85 @@
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+
+.navbar__links a {
+  text-decoration: none;
+  color: #333;
+}
+
+/* =========================
+   USER MENU
+========================= */
+
+.navbar__user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.navbar__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.navbar__username {
+  font-weight: 500;
+}
+
+.navbar__dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+
+  min-width: 180px;
+
+  background: white;
+  border-radius: 10px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+  display: none;
+  overflow: hidden;
+
+  z-index: 9999;
+}
+
+.navbar__dropdown a {
+  display: block;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #333;
+}
+
+.navbar__dropdown a:hover {
+  background: #f5f5f5;
+}
+
+.navbar__user:hover .navbar__dropdown {
+  display: block;
+}

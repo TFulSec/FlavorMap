@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlavorMap - Trang chủ</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/pages.css" />
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Khám phá ẩm thực địa phương Việt Nam</h1>
+      <p>FlavorMap giúp bạn tìm quán ăn nổi bật, mới nhất và phù hợp ngay trong tầm tay.</p>
+      <div class="hero__search">
+        <input id="heroSearch" type="search" placeholder="Tìm quán ăn, phở, cafe..." />
+        <button class="btn btn--primary" id="heroSearchBtn">Tìm kiếm</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="category-chips">
+    <div class="container chips-wrap">
+      <button class="chip" data-category="Cafe">☕ Cafe</button>
+      <button class="chip" data-category="Cơm">🍚 Cơm</button>
+      <button class="chip" data-category="Đồ ăn vặt">🍢 Đồ ăn vặt</button>
+      <button class="chip" data-category="Nước">🥤 Nước</button>
+      <button class="chip" data-category="Hải sản">🦐 Hải sản</button>
+    </div>
+  </section>
+
+  <section class="restaurant-section">
+    <div class="container">
+      <h2>🌟 Quán nổi bật</h2>
+      <div class="restaurant-grid" id="featured-grid"></div>
+    </div>
+  </section>
+
+  <section class="restaurant-section">
+    <div class="container">
+      <h2>🆕 Mới thêm gần đây</h2>
+      <div class="restaurant-grid" id="newest-grid"></div>
+    </div>
+  </section>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/components/toast.js"></script>
+  <script src="../assets/js/components/skeleton.js"></script>
+  <script src="../assets/js/components/card.js"></script>
+  <script src="../assets/js/components/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      navbar.render();
+      const featuredGrid = document.getElementById('featured-grid');
+      const newestGrid = document.getElementById('newest-grid');
+      skeleton.renderCards(featuredGrid, 4);
+      skeleton.renderCards(newestGrid, 6);
+
+      const loadData = async (type, container, limit) => {
+  try {
+    const response = await api.get(`/restaurants?type=${type}&limit=${limit}`);
+
+    console.log("API RESPONSE:", response);
+
+    container.innerHTML = '';
+
+    if (!response || !response.data || response.data.length === 0) {
+      container.innerHTML = '<p class="empty-state">Không có dữ liệu.</p>';
+      return;
+    }
+
+    container.innerHTML = response.data
+      .map((restaurant) => card.render(restaurant))
+      .join('');
+
+  } catch (error) {
+    console.error(`Error loading ${type} restaurants:`, error);
+
+    container.innerHTML =
+      '<p class="empty-state">Đã xảy ra lỗi khi tải dữ liệu.</p>';
+
+    if (toast && typeof toast.error === 'function') {
+      toast.error(error.message);
+    }
+  }
+};
+
+      await loadData('featured', featuredGrid, 8);
+      await loadData('newest', newestGrid, 8);
+
+      document.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const category = chip.dataset.category;
+          window.location.href = `search.html?category=${encodeURIComponent(category)}`;
+        });
+      });
+
+      document.getElementById('heroSearchBtn').addEventListener('click', () => {
+        const query = document.getElementById('heroSearch').value.trim();
+        if (query) {
+          window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập | FlavorMap</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/pages.css" />
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <section class="auth-page">
+    <div class="container">
+      <div class="page-card" style="max-width: 520px; margin: 0 auto;">
+        <h1>Đăng nhập</h1>
+        <p>Đăng nhập vào tài khoản FlavorMap của bạn.</p>
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input id="email" type="email" class="form-input" required />
+            <span class="field-error" id="emailError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Mật khẩu</label>
+            <div class="input-wrap">
+              <input id="password" type="password" class="form-input" required />
+              <button type="button" class="toggle-pw" id="togglePassword">Hiện</button>
+            </div>
+            <span class="field-error" id="passwordError"></span>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+            <input id="remember" type="checkbox" />
+            <label for="remember">Ghi nhớ đăng nhập</label>
+          </div>
+          <button type="submit" class="btn btn--primary">Đăng nhập</button>
+          <p style="margin-top:1rem;">Chưa có tài khoản? <a href="register.html">Đăng ký</a></p>
+        </form>
+      </div>
+    </div>
+  </section>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/components/toast.js"></script>
+  <script src="../assets/js/components/navbar.js"></script>
+  <script>
+    if (auth.isLoggedIn()) {
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      navbar.render();
+      document.getElementById('togglePassword').addEventListener('click', () => {
+        const input = document.getElementById('password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        document.getElementById('emailError').textContent = '';
+        document.getElementById('passwordError').textContent = '';
+
+        if (!email) {
+          document.getElementById('emailError').textContent = 'Email là bắt buộc.';
+          return;
+        }
+        if (!password) {
+          document.getElementById('passwordError').textContent = 'Mật khẩu là bắt buộc.';
+          return;
+        }
+
+        try {
+          const response = await api.post('/auth/login', { email, password });
+          auth.setSession(response.data);
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get('redirect') || 'index.html';
+          window.location.href = redirect;
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

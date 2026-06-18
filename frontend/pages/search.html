@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tìm kiếm | FlavorMap</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/pages.css" />
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <section class="search-page">
+    <div class="container search-layout">
+      <aside class="filter-panel">
+        <h3>Bộ lọc</h3>
+        <form id="filterForm">
+          <div class="filter-section">
+            <h4>Từ khóa</h4>
+            <input id="searchQuery" type="search" class="form-input" placeholder="Ví dụ: phở, cafe, bánh mì" />
+          </div>
+          <div class="filter-section">
+            <h4>Loại hình</h4>
+            <select id="category" class="form-input">
+              <option value="">Tất cả</option>
+              <option value="Cafe">Cafe</option>
+              <option value="Cơm">Cơm</option>
+              <option value="Đồ ăn vặt">Đồ ăn vặt</option>
+              <option value="Nước">Nước</option>
+              <option value="Hải sản">Hải sản</option>
+            </select>
+          </div>
+          <div class="filter-section">
+            <h4>Khoảng giá</h4>
+            <div style="display:grid; gap:0.75rem;">
+              <input id="priceMin" type="number" class="form-input" placeholder="Từ (VND)" min="0" />
+              <input id="priceMax" type="number" class="form-input" placeholder="Đến (VND)" min="0" />
+            </div>
+          </div>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem;">
+            <button type="submit" class="btn btn--primary">Áp dụng</button>
+            <button type="button" class="btn btn--outline" id="resetFiltersBtn">Đặt lại</button>
+          </div>
+        </form>
+      </aside>
+
+      <main>
+        <div class="search-header">
+          <h2>Kết quả tìm kiếm</h2>
+          <p id="searchSummary">Tìm kiếm quán ăn theo từ khóa, thể loại và ngân sách.</p>
+        </div>
+        <div id="resultsGrid" class="restaurant-grid"></div>
+        <div class="pagination" id="pagination"></div>
+      </main>
+    </div>
+  </section>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/components/toast.js"></script>
+  <script src="../assets/js/components/skeleton.js"></script>
+  <script src="../assets/js/components/card.js"></script>
+  <script src="../assets/js/components/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      navbar.render();
+      const searchQueryInput = document.getElementById('searchQuery');
+      const categoryInput = document.getElementById('category');
+      const priceMinInput = document.getElementById('priceMin');
+      const priceMaxInput = document.getElementById('priceMax');
+      const resultsGrid = document.getElementById('resultsGrid');
+      const pagination = document.getElementById('pagination');
+      const summary = document.getElementById('searchSummary');
+      const form = document.getElementById('filterForm');
+      const resetBtn = document.getElementById('resetFiltersBtn');
+
+      const params = new URLSearchParams(window.location.search);
+      let page = parseInt(params.get('page') || '1', 10);
+      const state = {
+        q: params.get('q') || '',
+        category: params.get('category') || '',
+        priceMin: params.get('priceMin') || '',
+        priceMax: params.get('priceMax') || '',
+      };
+
+      searchQueryInput.value = state.q;
+      categoryInput.value = state.category;
+      priceMinInput.value = state.priceMin;
+      priceMaxInput.value = state.priceMax;
+
+      const updateSummary = (meta) => {
+        summary.textContent = meta.total
+          ? `Tìm thấy ${meta.total} quán phù hợp.`
+          : 'Không có quán phù hợp. Thử thay đổi bộ lọc.';
+      };
+
+      const renderPagination = (meta) => {
+        pagination.innerHTML = '';
+        if (meta.totalPages <= 1) return;
+
+        const createButton = (label, targetPage, disabled = false) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'page-btn';
+          button.textContent = label;
+          button.disabled = disabled;
+          button.addEventListener('click', () => {
+            page = targetPage;
+            loadResults();
+          });
+          return button;
+        };
+
+        pagination.appendChild(createButton('« Trước', page - 1, page <= 1));
+        for (let index = 1; index <= meta.totalPages; index += 1) {
+          const button = createButton(index, index);
+          if (index === page) button.classList.add('active');
+          pagination.appendChild(button);
+        }
+        pagination.appendChild(createButton('Sau »', page + 1, page >= meta.totalPages));
+      };
+
+    const loadResults = async () => {
+  resultsGrid.innerHTML = '';
+  skeleton.renderCards(resultsGrid, 6);
+
+  try {
+    const query = new URLSearchParams();
+
+    if (state.q) query.append('q', state.q);
+    if (state.category) query.append('category', state.category);
+    if (state.priceMin) query.append('priceMin', state.priceMin);
+    if (state.priceMax) query.append('priceMax', state.priceMax);
+
+    query.append('page', page);
+    query.append('limit', 12);
+
+    const response = await api.get(
+      `/restaurants/filter?${query.toString()}`
+    );
+
+    console.log("SEARCH RESPONSE:", response);
+    console.log("SEARCH DATA:", response.data);
+
+    let restaurants = [];
+    let total = 0;
+    let totalPages = 1;
+
+    if (Array.isArray(response.data)) {
+      restaurants = response.data;
+      total = restaurants.length;
+    } else {
+      restaurants =
+        response.data?.data ||
+        response.data?.restaurants ||
+        [];
+
+      total =
+        response.data?.total ||
+        restaurants.length;
+
+      totalPages =
+        response.data?.totalPages ||
+        1;
+    }
+
+    if (restaurants.length === 0) {
+      resultsGrid.innerHTML = `
+        <div class="empty-state">
+          <p>Không tìm thấy quán ăn.</p>
+        </div>
+      `;
+    } else {
+      resultsGrid.innerHTML =
+        restaurants.map((r) => card.render(r)).join('');
+    }
+
+    updateSummary({ total });
+    renderPagination({ totalPages });
+
+    window.history.replaceState(
+      {},
+      '',
+      `search.html?${query.toString()}`
+    );
+
+  } catch (err) {
+    console.error(err);
+
+    resultsGrid.innerHTML = `
+      <div class="empty-state">
+        <p>Đã xảy ra lỗi khi tải kết quả.</p>
+      </div>
+    `;
+
+    if (toast) {
+      toast.error(err.message);
+    }
+  }
+};
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.q = searchQueryInput.value.trim();
+        state.category = categoryInput.value;
+        state.priceMin = priceMinInput.value;
+        state.priceMax = priceMaxInput.value;
+        page = 1;
+        loadResults();
+      });
+
+      resetBtn.addEventListener('click', () => {
+        searchQueryInput.value = '';
+        categoryInput.value = '';
+        priceMinInput.value = '';
+        priceMaxInput.value = '';
+        state.q = '';
+        state.category = '';
+        state.priceMin = '';
+        state.priceMax = '';
+        page = 1;
+        loadResults();
+      });
+
+      await loadResults();
+    });
+  </script>
+</body>
+</html>

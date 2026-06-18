@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng ký | FlavorMap</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/pages.css" />
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <section class="auth-page">
+    <div class="container">
+      <div class="page-card" style="max-width: 520px; margin: 0 auto;">
+        <h1>Đăng ký</h1>
+        <p>Tạo tài khoản mới để bắt đầu khám phá FlavorMap.</p>
+        <form id="registerForm">
+          <div class="form-group">
+            <label class="form-label" for="fullName">Họ và tên</label>
+            <input id="fullName" type="text" class="form-input" required />
+            <span class="field-error" id="fullNameError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input id="email" type="email" class="form-input" required />
+            <span class="field-error" id="emailError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Mật khẩu</label>
+            <div class="input-wrap">
+              <input id="password" type="password" class="form-input" required />
+              <button type="button" class="toggle-pw" id="togglePassword">Hiện</button>
+            </div>
+            <span class="field-error" id="passwordError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Xác nhận mật khẩu</label>
+            <div class="input-wrap">
+              <input id="confirmPassword" type="password" class="form-input" required />
+              <button type="button" class="toggle-pw" id="toggleConfirmPassword">Hiện</button>
+            </div>
+            <span class="field-error" id="confirmPasswordError"></span>
+          </div>
+          <button type="submit" class="btn btn--primary">Đăng ký</button>
+          <p style="margin-top:1rem;">Đã có tài khoản? <a href="login.html">Đăng nhập</a></p>
+        </form>
+      </div>
+    </div>
+  </section>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/components/toast.js"></script>
+  <script src="../assets/js/components/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      navbar.render();
+      document.getElementById('togglePassword').addEventListener('click', () => {
+        const input = document.getElementById('password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+      document.getElementById('toggleConfirmPassword').addEventListener('click', () => {
+        const input = document.getElementById('confirmPassword');
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+
+      document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        document.getElementById('fullNameError').textContent = '';
+        document.getElementById('emailError').textContent = '';
+        document.getElementById('passwordError').textContent = '';
+        document.getElementById('confirmPasswordError').textContent = '';
+
+        if (fullName.length < 2) {
+          document.getElementById('fullNameError').textContent = 'Họ tên phải có ít nhất 2 ký tự.';
+          return;
+        }
+        if (!email) {
+          document.getElementById('emailError').textContent = 'Email là bắt buộc.';
+          return;
+        }
+        if (password.length < 8) {
+          document.getElementById('passwordError').textContent = 'Mật khẩu phải có ít nhất 8 ký tự.';
+          return;
+        }
+        if (password !== confirmPassword) {
+          document.getElementById('confirmPasswordError').textContent = 'Xác nhận mật khẩu không khớp.';
+          return;
+        }
+
+        try {
+          await api.post('/auth/register', { fullName, email, password, confirmPassword });
+          toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+          setTimeout(() => window.location.href = 'login.html', 1200);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

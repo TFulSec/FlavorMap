@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hồ sơ | FlavorMap</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/components.css" />
+  <link rel="stylesheet" href="../assets/css/pages.css" />
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <section class="profile-page">
+    <div class="container">
+      <div class="page-card" style="max-width: 900px; margin: 0 auto;">
+        <h1>Hồ sơ cá nhân</h1>
+        <div class="tab-list">
+          <button class="tab-button active" data-tab="info">Thông tin cá nhân</button>
+          <button class="tab-button" data-tab="password">Đổi mật khẩu</button>
+        </div>
+        <div class="profile-tabs">
+          <div class="tab-panel active" id="tab-info">
+            <form id="profileForm">
+  <div class="form-group">
+    <label class="form-label" for="avatarInput">Avatar</label>
+
+    <div style="display:flex; gap:1rem; align-items:center;">
+      <img
+        id="avatarPreview"
+        src="../assets/images/default-avatar.svg"
+        alt="avatar"
+        style="
+          width:96px;
+          height:96px;
+          border-radius:50%;
+          object-fit:cover;
+          border:1px solid var(--color-border);
+        "
+      />
+
+      <input
+        type="file"
+        id="avatarInput"
+        accept="image/*"
+      />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="fullName">Họ và tên</label>
+    <input
+      id="fullName"
+      type="text"
+      class="form-input"
+      disabled
+    />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="email">Email</label>
+    <input
+      id="email"
+      type="email"
+      class="form-input"
+      disabled
+    />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="phone">Số điện thoại</label>
+    <input
+      id="phone"
+      type="tel"
+      class="form-input"
+      disabled
+    />
+  </div>
+
+  <div
+    style="
+      display:flex;
+      gap:1rem;
+      flex-wrap:wrap;
+      margin-top:1rem;
+    "
+  >
+    <button
+      type="button"
+      class="btn btn--primary"
+      id="editProfileBtn"
+    >
+      Chỉnh sửa
+    </button>
+
+    <button
+      type="submit"
+      class="btn btn--outline"
+      id="saveProfileBtn"
+      disabled
+    >
+      Lưu thay đổi
+    </button>
+
+    <button
+      type="button"
+      class="btn btn--outline"
+      id="cancelProfileBtn"
+      disabled
+    >
+      Huỷ
+    </button>
+  </div>
+</form>
+          </div>
+          <div class="tab-panel" id="tab-password">
+            <form id="passwordForm">
+              <div class="form-group">
+                <label class="form-label" for="currentPassword">Mật khẩu hiện tại</label>
+                <div class="input-wrap">
+                  <input id="currentPassword" type="password" class="form-input" required />
+                  <button type="button" class="toggle-pw" data-target="currentPassword">Hiện</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newPassword">Mật khẩu mới</label>
+                <div class="input-wrap">
+                  <input id="newPassword" type="password" class="form-input" required />
+                  <button type="button" class="toggle-pw" data-target="newPassword">Hiện</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                <div class="input-wrap">
+                  <input id="confirmNewPassword" type="password" class="form-input" required />
+                  <button type="button" class="toggle-pw" data-target="confirmNewPassword">Hiện</button>
+                </div>
+              </div>
+              <button type="submit" class="btn btn--primary">Đổi mật khẩu</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/components/toast.js"></script>
+  <script src="../assets/js/components/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      auth.requireLogin();
+      navbar.render();
+
+      const avatarPreview = document.getElementById('avatarPreview');
+      const avatarInput = document.getElementById('avatarInput');
+      const fullNameInput = document.getElementById('fullName');
+      const emailInput = document.getElementById('email');
+      const phoneInput = document.getElementById('phone');
+      const editBtn = document.getElementById('editProfileBtn');
+      const saveBtn = document.getElementById('saveProfileBtn');
+      const cancelBtn = document.getElementById('cancelProfileBtn');
+
+      let originalProfile = {};
+
+      const setEditing = (enabled) => {
+        fullNameInput.disabled = !enabled;
+        phoneInput.disabled = !enabled;
+        avatarInput.disabled = !enabled;
+        saveBtn.disabled = !enabled;
+        cancelBtn.disabled = !enabled;
+      };
+
+      const loadProfile = async () => {
+        try {
+          const response = await api.get('/users/profile');
+          const profile = response.data;
+          originalProfile = { ...profile };
+          avatarPreview.src = profile.AvatarUrl || '../assets/images/default-avatar.svg';
+          fullNameInput.value = profile.FullName || '';
+          emailInput.value = profile.Email || '';
+          phoneInput.value = profile.Phone || '';
+          setEditing(false);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      };
+
+      avatarInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          avatarPreview.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      editBtn.addEventListener('click', () => setEditing(true));
+      cancelBtn.addEventListener('click', () => {
+        setEditing(false);
+        avatarPreview.src = originalProfile.AvatarUrl || '../assets/images/default-avatar.svg';
+        fullNameInput.value = originalProfile.FullName || '';
+        phoneInput.value = originalProfile.Phone || '';
+      });
+
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    fullName: fullNameInput.value.trim(),
+    phone: phoneInput.value.trim(),
+    avatarUrl: avatarPreview.src.includes('data:')
+      ? avatarPreview.src
+      : originalProfile.AvatarUrl || null,
+  };
+
+  console.log('===== UPDATE PROFILE =====');
+  console.log(payload);
+
+  try {
+    const response = await api.put('/users/profile', payload);
+
+    console.log('UPDATE SUCCESS');
+    console.log(response);
+
+    originalProfile = {
+      ...originalProfile,
+      ...response.data,
+    };
+
+    toast.success('Cập nhật hồ sơ thành công');
+
+    setEditing(false);
+  } catch (err) {
+    console.error('UPDATE ERROR');
+    console.error(err);
+
+    toast.error(
+      err?.response?.message ||
+      err?.message ||
+      'Cập nhật thất bại'
+    );
+  }
+});
+
+      document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+        if (newPassword.length < 8) {
+          toast.error('Mật khẩu mới phải có ít nhất 8 ký tự.');
+          return;
+        }
+        if (newPassword !== confirmNewPassword) {
+          toast.error('Xác nhận mật khẩu không khớp.');
+          return;
+        }
+
+        try {
+          await api.put('/users/change-password', { currentPassword, newPassword, confirmPassword: confirmNewPassword });
+          toast.success('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+          auth.logout();
+          setTimeout(() => window.location.href = 'login.html', 1200);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+
+      document.querySelectorAll('.toggle-pw').forEach((button) => {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.dataset.target);
+          target.type = target.type === 'password' ? 'text' : 'password';
+        });
+      });
+
+      document.querySelectorAll('.tab-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.tab-button').forEach((btn) => btn.classList.remove('active'));
+          document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
+          button.classList.add('active');
+          document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+        });
+      });
+
+      await loadProfile();
+    });
+  </script>
+</body>
+</html>

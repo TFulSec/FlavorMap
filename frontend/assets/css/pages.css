@@ -1,0 +1,4 @@
+/* Page specific overrides */
+.search-page .restaurant-grid { margin-top: var(--space-4); }
+.profile-tabs .tab-panel { display: none; }
+.profile-tabs .tab-panel.active { display: block; }

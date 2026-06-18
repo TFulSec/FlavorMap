@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" role="img" aria-labelledby="title">
+  <title id="title">Placeholder image</title>
+  <rect width="400" height="240" fill="#E5E7EB" />
+  <path d="M80 160h240" stroke="#9CA3AF" stroke-width="12" stroke-linecap="round" />
+  <circle cx="120" cy="90" r="40" fill="#D1D5DB" />
+  <rect x="210" y="60" width="120" height="100" rx="12" fill="#D1D5DB" />
+</svg>
