@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị hệ thống - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .admin-layout { margin: var(--space-12) auto; display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8); min-height: 85vh; padding: 0 var(--space-4); }
+      
+      /* Sidebar */
+      .admin-sidebar { background: var(--color-bg-soft); padding: var(--space-6); border-radius: var(--radius-xl); border: 1px solid rgba(255, 90, 31, 0.08); box-shadow: var(--shadow-md); align-self: flex-start; position: sticky; top: 100px; }
+      .admin-sidebar h3 { font-family: var(--font-display); font-size: var(--font-size-sm); font-weight: 800; margin-bottom: var(--space-6); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-light); border-bottom: 1px solid var(--color-border); padding-bottom: 12px; }
+      .admin-sidebar .nav-item { display: flex; align-items: center; gap: var(--space-3); padding: 0.85rem 1.15rem; border-radius: var(--radius-xl); cursor: pointer; color: var(--color-text); font-weight: 700; transition: all var(--transition); margin-bottom: var(--space-3); font-size: var(--font-size-sm); border: 1px solid transparent; }
+      .admin-sidebar .nav-item:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: rgba(255, 90, 31, 0.15); }
+      .admin-sidebar .nav-item.active { background: var(--color-primary); color: #fff; box-shadow: 0 10px 15px -3px rgba(255, 90, 31, 0.25); border-color: var(--color-primary); }
+      
+      /* Content wrap */
+      .admin-content { background: var(--color-bg-soft); padding: var(--space-10); border-radius: var(--radius-2xl); border: 1px solid rgba(255, 90, 31, 0.08); box-shadow: var(--shadow-md); }
+      .admin-content h2 { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; color: var(--color-secondary); margin-bottom: var(--space-8); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 14px; position: relative; }
+      
+      /* Stats Board */
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-10); }
+      .stat-card { background: var(--color-bg); padding: var(--space-6); border-radius: var(--radius-xl); border: 1px solid rgba(255, 90, 31, 0.06); display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); transition: transform var(--transition); }
+      .stat-card:hover { transform: translateY(-3px); }
+      .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+      .stat-value { font-size: calc(var(--font-size-3xl) - 0.25rem); font-weight: 850; color: var(--color-primary); line-height: 1.2; }
+ 
+      /* Control Bar */
+      .control-bar { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8); align-items: center; justify-content: space-between; background: var(--color-bg); padding: var(--space-4); border-radius: var(--radius-xl); border: 1.5px solid var(--color-border); }
+      .search-box-admin { position: relative; flex: 1; min-width: 200px; max-width: 400px; }
+      .search-box-admin input { width: 100%; padding: 0.75rem 1rem; padding-left: 42px; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-family: var(--font-family); outline: none; transition: all var(--transition); font-weight: 550; color: var(--color-secondary); }
+      .search-box-admin input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.12); }
+      .search-box-admin::before { content: "🔍"; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; }
+
+      /* Items lists styling */
+      .items-list { display: flex; flex-direction: column; gap: var(--space-4); }
+      .sub-item, .user-row { background: var(--color-bg-soft); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; gap: var(--space-6); align-items: center; justify-content: space-between; transition: all var(--transition); box-shadow: var(--shadow-sm); }
+      .sub-item:hover, .user-row:hover { box-shadow: var(--shadow-md); border-color: rgba(226, 232, 240, 1); transform: translateY(-2px); }
+      
+      .sub-img-wrap { width: 120px; height: 90px; overflow: hidden; border-radius: var(--radius-lg); flex-shrink: 0; background: var(--color-border); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+      .sub-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+      .item-details { flex-shrink: 1; flex: 1; }
+      .item-details h4 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: var(--color-secondary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .item-details p { margin-bottom: 4px; font-size: var(--font-size-sm); color: var(--color-text-light); font-weight: 450; }
+      .item-meta { display: flex; gap: 14px; font-size: var(--font-size-xs); color: var(--color-text-light); margin-top: 8px; font-weight: 550; }
+      
+      /* Badges */
+      .badge { display: inline-block; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid transparent; }
+      .badge--pending { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+      .badge--approved { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
+      .badge--rejected { background: #FEF2F2; color: #DC2626; border-color: #FCA5A5; }
+      .badge--admin { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+      .badge--manager { background: #EEF2FF; color: #4F46E5; border-color: #C7D2FE; }
+      .badge--user { background: #F8FAFC; color: #475569; border-color: #E2E8F0; }
+      .badge--banned { background: #FFF5F5; color: #E53E3E; border: 1px dashed #FEB2B2; }
+
+      .action-btns { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+      
+      /* Sections management */
+      .section-view { display: none; }
+      .section-view.active { display: block; animation: fadeIn 0.3s ease-out; }
+
+      /* Modals design */
+      .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); z-index: 1005; justify-content: center; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .modal-card { background: #ffffff; padding: 36px; border-radius: var(--radius-xl); width: 550px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-hover); border: 1px solid rgba(226, 232, 240,0.8); animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+      .modal-card h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 850; color: var(--color-secondary); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 12px; margin-bottom: 20px; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+      
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+      @media (max-width: 768px) {
+        .admin-layout { grid-template-columns: 1fr; padding: var(--space-6) var(--space-4); margin: var(--space-6) 0; }
+        .admin-sidebar { width: 100%; position: static; box-shadow: var(--shadow-sm); }
+        .sub-item, .user-row { flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+        .action-btns { width: 100%; justify-content: flex-end; margin-top: var(--space-2); }
+      }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container admin-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="admin-sidebar" id="adminSidebar">
+        <h3>Quản trị website</h3>
+        <div class="nav-item active" data-target="dashboard-section">📊 Thống kê chung</div>
+        <div class="nav-item" data-target="submissions-section">📑 Phê duyệt quán ăn</div>
+        <div class="nav-item" data-target="restaurants-section">🏢 Quản lý tất cả quán</div>
+        <div class="nav-item" data-target="users-section">👥 Quản lý thành viên</div>
+      </aside>
+
+      <!-- Content sections container -->
+      <section class="admin-content">
+        
+        <!-- DASHBOARD OVERVIEW SECTION -->
+        <div id="dashboard-section" class="section-view active">
+          <h2>Thống kê tổng quan</h2>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Tổng số quán ăn</span>
+              <span class="stat-value" id="stat-total-rest">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label font-bold text-amber-600">Đề xuất chờ duyệt</span>
+              <span class="stat-value" id="stat-pending-sub" style="color:var(--color-warning);">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Tổng số người dùng</span>
+              <span class="stat-value" id="stat-total-users" style="color:#2563eb;">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Nhân sự quản trị</span>
+              <span class="stat-value" id="stat-total-staff" style="color:var(--color-success)">--</span>
+            </div>
+          </div>
+
+          <div style="background:var(--color-bg); padding:24px; border-radius: var(--radius-md); border:1.5px dashed var(--color-border); text-align:center;">
+             <h3 class="font-bold text-slate-800" style="margin-bottom:8px;">Chào mừng quay trở lại, quản trị viên!</h3>
+             <p class="text-sm text-slate-500">Tại bảng điều khiển Thổ Địa Ẩm Thực, bạn có thể phê duyệt quán của thành viên, trực tiếp can thiệp chỉnh sửa dữ liệu ẩm thực, phân công vai trò hoặc khóa tài khoản vi phạm chính sách.</p>
+          </div>
+        </div>
+
+        <!-- SUBMISSIONS SECTION -->
+        <div id="submissions-section" class="section-view">
+          <h2>Phê duyệt đề xuất quán ăn</h2>
+          
+          <div class="control-bar">
+            <div class="tabs" style="display:flex; gap:12px;">
+              <button class="btn btn--primary" id="btnSubPending" style="border-radius: var(--radius-full);">Chờ Phê Duyệt</button>
+              <button class="btn btn--outline" id="btnSubProcessed" style="border-radius: var(--radius-full);">Đã Xử Lý</button>
+            </div>
+          </div>
+          
+          <div class="items-list" id="submissions-list"></div>
+        </div>
+
+        <!-- ALL RESTAURANTS SECTION -->
+        <div id="restaurants-section" class="section-view">
+          <h2>Quản lý tệp dữ liệu quán ăn</h2>
+          
+          <div class="control-bar">
+            <div class="search-box-admin">
+              <input type="text" id="restaurantSearchInput" placeholder="Tìm kiếm quán ăn...">
+            </div>
+            <button class="btn btn--primary" onclick="openCreateModal()">
+              <span>➕ Thêm quán ăn trực tiếp</span>
+            </button>
+          </div>
+          
+          <div class="items-list" id="restaurants-list"></div>
+        </div>
+
+        <!-- USERS SECTION -->
+        <div id="users-section" class="section-view">
+          <h2>Quản lý thành viên hệ thống</h2>
+          
+          <div class="control-bar">
+            <div class="search-box-admin">
+              <input type="text" id="userSearchInput" placeholder="Tìm kiếm theo tên hoặc email...">
+            </div>
+            <select id="userRoleFilter" class="form-input" style="padding: 6px 12px; font-size: 14px; width:auto; border-radius: var(--radius-md);">
+              <option value="">Tất cả vai trò</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
+              <option value="User">User</option>
+            </select>
+          </div>
+          
+          <div class="items-list" id="users-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL EDIT / CREATE RESTAURANT -->
+    <div id="restaurantFormModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modalTitle">Sửa đổi thông tin quán ăn</h3>
+            <form id="restaurantForm" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <input type="hidden" id="rForm-id">
+                <input type="hidden" id="rForm-action" value="update"> <!-- 'create' or 'update' -->
+                
+                <div class="form-group">
+                    <label class="form-label">Tên quán ăn *</label>
+                    <input type="text" id="rForm-name" class="form-input" required placeholder="Ví dụ: Phở Gia Truyền Bát Đàn">
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Thành phố *</label>
+                        <select id="rForm-city" class="form-input" required>
+                            <option value="Hà Nội">Hà Nội</option>
+                            <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                            <option value="Đà Nẵng">Đà Nẵng</option>
+                            <option value="Hải Phòng">Hải Phòng</option>
+                            <option value="Cần Thơ">Cần Thơ</option>
+                            <option value="Huế">Huế</option>
+                            <option value="Nha Trang">Nha Trang</option>
+                            <option value="Đà Lạt">Đà Lạt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quận / Huyện *</label>
+                        <input type="text" id="rForm-district" class="form-input" required placeholder="Ví dụ: Hoàn Kiếm">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ cụ thể *</label>
+                    <input type="text" id="rForm-address" class="form-input" required placeholder="Ví dụ: 49 Bát Đàn">
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Danh mục món ăn *</label>
+                        <select id="rForm-category" class="form-input" required>
+                            <option value="Cơm">🍚 Cơm</option>
+                            <option value="Cafe">☕ Cafe</option>
+                            <option value="Đồ ăn vặt">🍢 Đồ ăn vặt</option>
+                            <option value="Nước">🥤 Nước</option>
+                            <option value="Hải sản">🦐 Hải sản</option>
+                            <option value="Khác">🍽 Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hình ảnh banner (URL hoặc Tải Lên) *</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="rForm-bannerurl" class="form-input" required placeholder="URL hoặc chọn tệp tải lên..." style="flex:1;">
+                            <input type="file" id="rForm-bannerfile" accept="image/*" style="display:none;" onchange="uploadRestaurantBanner(event)">
+                            <button type="button" class="btn btn--outline" style="padding:0 12px; font-size:13px; font-weight:600; white-space:nowrap; border-color:var(--color-border);" onclick="document.getElementById('rForm-bannerfile').click()">📁 Chọn tệp</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mô tả giới thiệu nổi bật</label>
+                    <textarea id="rForm-description" class="form-input" style="height: 80px; resize:vertical;" placeholder="Mô tả quán, thực đơn đặc biệt..."></textarea>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Giá tối thiểu (đ) *</label>
+                        <input type="number" id="rForm-pricemin" class="form-input" required min="0" placeholder="Ví dụ: 30000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá tối đa (đ) *</label>
+                        <input type="number" id="rForm-pricemax" class="form-input" required min="0" placeholder="Ví dụ: 80000">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Giờ mở cửa *</label>
+                        <input type="text" id="rForm-opening" class="form-input" required placeholder="Ví dụ: 06:00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giờ đóng cửa *</label>
+                        <input type="text" id="rForm-closing" class="form-input" required placeholder="Ví dụ: 21:30">
+                    </div>
+                </div>
+
+                <div style="display:flex; gap: 24px; margin-top: 4px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor:pointer;">
+                      <input type="checkbox" id="rForm-isnew"> Có gắn nhãn MỚI
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor:pointer;">
+                      <input type="checkbox" id="rForm-isfeatured"> Có đặt ở mục NỔI BẬT
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button type="submit" class="btn btn--primary" style="flex: 1; justify-content:center;">Lưu thông tin</button>
+                    <button type="button" class="btn btn--outline" style="flex: 1; justify-content:center;" onclick="closeFormModal()">Hủy bỏ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MANAGE MENU -->
+    <div id="menuManageModal" class="modal-overlay">
+        <div class="modal-card" style="width: 700px;">
+            <h3 id="menuModalTitle">Quản lý thực đơn</h3>
+            <p style="margin-top:-14px; margin-bottom: 20px; font-size:14px; color:var(--color-text-light);">Cập nhật danh sách món ăn, giá tiền, hành động nhanh và ảnh minh họa món từ thiết bị.</p>
+            
+            <div id="menu-loading-msg" style="padding:16px 0; text-align:center;">Đang tải danh sách món ăn...</div>
+            
+            <!-- List of current menu items -->
+            <div id="menu-items-list" style="max-height: 250px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom: 20px; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding:12px; background:var(--color-bg);">
+            </div>
+            
+            <div style="border-top:1.5px dashed var(--color-border); padding-top:16px; margin-top:16px;">
+                <h4 style="font-weight:800; color:var(--color-secondary); margin-bottom:12px;" id="menuItemFormTitle">Thêm món ăn mới</h4>
+                <form id="menuItemForm" style="display:flex; flex-direction:column; gap:12px;" onsubmit="handleMenuItemFormSubmit(event)">
+                    <input type="hidden" id="mForm-id">
+                    <input type="hidden" id="mForm-action" value="create"> <!-- 'create' or 'update' -->
+                    <input type="hidden" id="mForm-restaurantId">
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Tên món *</label>
+                            <input type="text" id="mForm-name" class="form-input" required placeholder="Ví dụ: Phở Đặc Biệt, Trà Sữa Thạch">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Giá tiền (VNĐ) *</label>
+                            <input type="number" id="mForm-price" class="form-input" required placeholder="Ví dụ: 45000">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">Mô tả món ăn</label>
+                        <input type="text" id="mForm-description" class="form-input" placeholder="Ví dụ: Phở nạm, gầu giòn thơm ngon hoặc mô tả thành phần...">
+                    </div>
+                    
+                    <div class="grid-2" style="align-items: center;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Đường dẫn ảnh món ăn (URL hoặc Tải Lên)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="mForm-imageurl" class="form-input" placeholder="URL hoặc chọn tệp để tải ảnh lên">
+                                <input type="file" id="mForm-imagefile" accept="image/*" style="display:none;" onchange="uploadMenuItemPhoto(event)">
+                                <button type="button" class="btn btn--outline" style="padding:0 10px; font-size:12px; font-weight:600; white-space:nowrap; border-color:var(--color-border);" onclick="document.getElementById('mForm-imagefile').click()">📁 Chọn tệp</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor:pointer; font-size:13px; color:var(--color-secondary);">
+                                <input type="checkbox" id="mForm-isavailable" checked style="width:16px; height:16px; accent-color:var(--color-primary);"> Còn hàng / Sẵn sàng phục vụ
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px;">
+                        <button type="submit" class="btn btn--primary" id="btnSaveMenuItem" style="padding:8px 18px; font-size:13px;">Lưu món ăn</button>
+                        <button type="button" class="btn btn--outline" id="btnResetMenuItem" style="padding:8px 18px; font-size:13px; border-color:var(--color-border);" onclick="resetMenuItemForm()">Hủy bỏ / Tạo mới</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div style="text-align:right; margin-top:24px; border-top: 1.5px solid var(--color-border); padding-top:16px;">
+                <button type="button" class="btn btn--outline" onclick="closeMenuManageModal()" style="font-size:14px; font-weight:700; border-color:var(--color-border); padding:8px 20px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      let currentSubFilter = 'Pending';
+      let allRestaurants = [];
+      let allUsers = [];
+
+      document.addEventListener('DOMContentLoaded', async () => {
+         auth.requireLogin();
+         const user = auth.getUser();
+         if (!user || (user.role !== 'Admin' && user.role !== 'Manager')) {
+             toast.error('Có lỗi xảy ra: Bạn không được cấp quyền truy cập bảng quản lý.');
+             window.location.href = '/pages/index.html';
+             return;
+         }
+
+         navbar.render();
+         setupSidebarNavigation();
+         setupEvents();
+         
+         // Initial load
+         await computeStats();
+      });
+
+      // Basic stats loading via api
+      async function computeStats() {
+          try {
+              const resR = await api.get('/admin/restaurants');
+              const resU = await api.get('/admin/users');
+              const resS = await api.get('/admin/submissions?status=Pending');
+              
+              const totalRest = resR.data ? resR.data.length : 0;
+              const totalUsers = resU.data ? resU.data.length : 0;
+              const pendingSub = resS.data ? resS.data.length : 0;
+              const totalStaff = resU.data ? resU.data.filter(u => u.Role === 'Admin' || u.Role === 'Manager').length : 0;
+
+              document.getElementById('stat-total-rest').textContent = totalRest;
+              document.getElementById('stat-pending-sub').textContent = pendingSub;
+              document.getElementById('stat-total-users').textContent = totalUsers;
+              document.getElementById('stat-total-staff').textContent = totalStaff;
+          } catch(err) {
+              console.error('Failed to calculate directory metrics', err);
+          }
+      }
+
+      function setupSidebarNavigation() {
+          document.querySelectorAll('#adminSidebar .nav-item').forEach(item => {
+              item.addEventListener('click', (e) => {
+                  document.querySelectorAll('#adminSidebar .nav-item').forEach(nav => nav.classList.remove('active'));
+                  e.currentTarget.classList.add('active');
+                  
+                  const targetId = e.currentTarget.getAttribute('data-target');
+                  document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+                  document.getElementById(targetId).classList.add('active');
+
+                  if (targetId === 'dashboard-section') {
+                      computeStats();
+                  } else if(targetId === 'users-section') {
+                      loadUsers();
+                  } else if (targetId === 'restaurants-section') {
+                      loadAllRestaurants();
+                  } else if (targetId === 'submissions-section') {
+                      loadSubmissions();
+                  }
+              });
+          });
+      }
+
+      function setupEvents() {
+          // Submissions subfilters
+          document.getElementById('btnSubPending').addEventListener('click', () => {
+              currentSubFilter = 'Pending';
+              document.getElementById('btnSubPending').className = 'btn btn--primary';
+              document.getElementById('btnSubProcessed').className = 'btn btn--outline';
+              loadSubmissions();
+          });
+          document.getElementById('btnSubProcessed').addEventListener('click', () => {
+              currentSubFilter = 'Processed';
+              document.getElementById('btnSubProcessed').className = 'btn btn--primary';
+              document.getElementById('btnSubPending').className = 'btn btn--outline';
+              loadSubmissions();
+          });
+
+          // Live Search restaurants
+          document.getElementById('restaurantSearchInput').addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase().trim();
+              filterRestaurantsInView(query);
+          });
+
+          // Live Search users
+          document.getElementById('userSearchInput').addEventListener('input', () => filterUsersInView());
+          document.getElementById('userRoleFilter').addEventListener('change', () => filterUsersInView());
+
+          // Form integration submit
+          document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const action = document.getElementById('rForm-action').value;
+              const id = document.getElementById('rForm-id').value;
+              
+              const payload = {
+                  Name: document.getElementById('rForm-name').value.trim(),
+                  City: document.getElementById('rForm-city').value,
+                  District: document.getElementById('rForm-district').value.trim(),
+                  Address: document.getElementById('rForm-address').value.trim(),
+                  Category: document.getElementById('rForm-category').value,
+                  BannerUrl: document.getElementById('rForm-bannerurl').value.trim(),
+                  Description: document.getElementById('rForm-description').value.trim(),
+                  PriceMin: parseInt(document.getElementById('rForm-pricemin').value) || 0,
+                  PriceMax: parseInt(document.getElementById('rForm-pricemax').value) || 0,
+                  OpeningTime: document.getElementById('rForm-opening').value.trim(),
+                  ClosingTime: document.getElementById('rForm-closing').value.trim(),
+                  IsNew: document.getElementById('rForm-isnew').checked,
+                  IsFeatured: document.getElementById('rForm-isfeatured').checked,
+              };
+
+              try {
+                  if (action === 'create') {
+                      await api.post('/admin/restaurants', payload);
+                      toast.success('Đã tạo thành công quán ăn ẩm thực mới!');
+                  } else {
+                      await api.put(`/admin/restaurants/${id}`, payload);
+                      toast.success('Đã cập nhật các thay đổi của quán ăn thành công.');
+                  }
+                  closeFormModal();
+                  loadAllRestaurants();
+                  computeStats();
+              } catch(err) {
+                  toast.error('Lỗi khi lưu quán ăn: ' + err.message);
+              }
+          });
+      }
+
+      // SUBMISSIONS
+      async function loadSubmissions() {
+          const list = document.getElementById('submissions-list');
+          list.innerHTML = '<p>Đang tải danh sách đề xuất...</p>';
+          try {
+              const res = await api.get(`/admin/submissions?status=${currentSubFilter}`);
+              const data = res.data;
+              if(!data || data.length === 0) {
+                  list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Không tìm thấy thông báo đề xuất nào phù hợp phân mục.</p>';
+                  return;
+              }
+
+              list.innerHTML = data.map(item => `
+                  <div class="sub-item animate-fade">
+                     <div class="sub-img-wrap">
+                        <img src="${item.ImageUrl || 'https://images.unsplash.com/photo-1547496502-affa284164b3?auto=format&fit=crop&q=80&w=800'}" onerror="this.src='https://images.unsplash.com/photo-1547496502-affa284164b3?auto=format&fit=crop&q=80&w=800'">
+                     </div>
+                     <div class="item-details">
+                        <h4>
+                           ${item.Name} 
+                           <span class="badge badge--${item.Status.toLowerCase()}">${item.Status === 'Pending' ? 'Chờ duyệt' : item.Status}</span>
+                        </h4>
+                        <p><strong>Địa chỉ đề xuất:</strong> ${item.Address}${item.District ? ', ' + item.District : ''}, ${item.City || 'Chưa định đoạt'}</p>
+                        <p><strong>Loại món:</strong> ${item.Category}</p>
+                        ${item.Description ? `<p><strong>Mô tả:</strong> ${item.Description}</p>` : ''}
+                        
+                        <div class="item-meta">
+                          <span>Khoảng giá: ${utils.formatPrice(item.SuggestedPriceMin || 0)} - ${utils.formatPrice(item.SuggestedPriceMax || 0)}</span>
+                          <span>Tọa độ: (${item.Latitude || 'N/A'}, ${item.Longitude || 'N/A'})</span>
+                        </div>
+                     </div>
+                     
+                     ${item.Status === 'Pending' ? `
+                         <div class="action-btns">
+                            <button class="btn btn--primary" style="padding:4px 12px; font-size:13px;" onclick="updateSubStatus('${item.Id}', 'Approved')">Duyệt quán</button>
+                            <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:red; border-color:#fee2e2;" onclick="updateSubStatus('${item.Id}', 'Rejected')">Từ chối</button>
+                         </div>
+                     ` : ''}
+                  </div>
+              `).join('');
+          } catch(err) {
+              list.innerHTML = `<p style="red">Có lỗi xảy ra: ${err.message}</p>`;
+          }
+      }
+
+      async function updateSubStatus(id, status) {
+          if (!confirm(`Xác nhận hành động ${status === 'Approved' ? 'Duyệt phê chuẩn' : 'Từ chối đại diện'} quán này vào danh sách dịch vụ?`)) return;
+          try {
+              await api.put(`/admin/submissions/${id}/status`, { status });
+              toast.success('Phê chuẩn trạng thái đề xuất ẩm thực thành công.');
+              loadSubmissions();
+              computeStats();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      // RESTAURANTS
+      async function loadAllRestaurants() {
+          const list = document.getElementById('restaurants-list');
+          list.innerHTML = '<p>Đang tải danh mục quán...</p>';
+          try {
+              const res = await api.get('/admin/restaurants');
+              allRestaurants = res.data || [];
+              renderRestaurantsList(allRestaurants);
+          } catch(err) {
+              list.innerHTML = `<p style="color:red">Lỗi tải dữ liệu: ${err.message}</p>`;
+          }
+      }
+
+      function renderRestaurantsList(data) {
+          const list = document.getElementById('restaurants-list');
+          if(!data || data.length === 0) {
+              list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Thư mục quán rỗng hoặc từ khóa lọc không khớp.</p>';
+              return;
+          }
+
+          list.innerHTML = data.map(item => `
+              <div class="sub-item" data-rest-name="${item.Name.toLowerCase()}" data-rest-address="${item.Address.toLowerCase()}">
+                 <div class="sub-img-wrap">
+                    <img src="${item.BannerUrl || 'https://images.unsplash.com/photo-1547496502-affa284164b3?auto=format&fit=crop&q=80&w=800'}" onerror="this.src='https://images.unsplash.com/photo-1547496502-affa284164b3?auto=format&fit=crop&q=80&w=800'">
+                 </div>
+                 <div class="item-details">
+                    <h4>
+                        ${item.Name}
+                        ${item.IsFeatured ? '<span class="badge badge--approved">Nổi Bật</span>' : ''}
+                        ${item.IsNew ? '<span class="badge badge--pending">Mới</span>' : ''}
+                    </h4>
+                    <p><strong>Vị trí:</strong> ${item.Address}${item.District ? ', ' + item.District : ''}, ${item.City}</p>
+                    <p><strong>Nhóm ẩm thực:</strong> ${item.Category}</p>
+                    <p><strong>Mở cửa:</strong> ${item.OpeningTime || '08:00'} - ${item.ClosingTime || '22:00'} | <strong>Đánh giá:</strong> ⭐ ${item.Rating || '5.0'}</p>
+                 </div>
+                 <div class="action-btns">
+                    <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:var(--color-secondary); border-color:var(--color-border);" onclick="openMenuModal('${item.Id}', \`${item.Name.replace(/'/g, "\\'")}\`)">Thực đơn</button>
+                    <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:var(--color-primary); border-color:var(--color-border);" onclick="openEditModal('${item.Id}')">Sửa</button>
+                    <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:red; border-color:#fee2e2;" onclick="deleteRestaurant('${item.Id}')">Xóa</button>
+                 </div>
+              </div>
+          `).join('');
+      }
+
+      function filterRestaurantsInView(query) {
+          if (!query) {
+              renderRestaurantsList(allRestaurants);
+              return;
+          }
+          const filtered = allRestaurants.filter(r => 
+              r.Name.toLowerCase().includes(query) || 
+              r.Address.toLowerCase().includes(query) || 
+              (r.District && r.District.toLowerCase().includes(query)) ||
+              r.City.toLowerCase().includes(query) ||
+              r.Category.toLowerCase().includes(query)
+          );
+          renderRestaurantsList(filtered);
+      }
+
+      // CREATE / EDIT RESTAURANTS MODALS
+      function openCreateModal() {
+          document.getElementById('modalTitle').textContent = 'Thêm quán ăn mới hoàn toàn';
+          document.getElementById('restaurantForm').reset();
+          document.getElementById('rForm-action').value = 'create';
+          document.getElementById('rForm-id').value = '';
+          
+          document.getElementById('rForm-name').value = '';
+          document.getElementById('rForm-city').value = 'Hà Nội';
+          document.getElementById('rForm-district').value = '';
+          document.getElementById('rForm-address').value = '';
+          document.getElementById('rForm-category').value = 'Cơm';
+          document.getElementById('rForm-bannerurl').value = 'https://images.unsplash.com/photo-1547496502-affa284164b3?auto=format&fit=crop&q=80&w=800';
+          document.getElementById('rForm-description').value = '';
+          document.getElementById('rForm-pricemin').value = '30000';
+          document.getElementById('rForm-pricemax').value = '80000';
+          document.getElementById('rForm-opening').value = '08:00';
+          document.getElementById('rForm-closing').value = '22:00';
+          document.getElementById('rForm-isnew').checked = true;
+          document.getElementById('rForm-isfeatured').checked = false;
+
+          document.getElementById('restaurantFormModal').style.display = 'flex';
+      }
+
+      function openEditModal(id) {
+          const rest = allRestaurants.find(r => r.Id === id);
+          if(!rest) return;
+          
+          document.getElementById('modalTitle').textContent = 'Sửa đổi thông tin quán ăn';
+          document.getElementById('rForm-action').value = 'update';
+          document.getElementById('rForm-id').value = rest.Id;
+          
+          document.getElementById('rForm-name').value = rest.Name || '';
+          document.getElementById('rForm-city').value = rest.City || 'Hà Nội';
+          document.getElementById('rForm-district').value = rest.District || '';
+          document.getElementById('rForm-address').value = rest.Address || '';
+          document.getElementById('rForm-category').value = rest.Category || 'Khác';
+          document.getElementById('rForm-bannerurl').value = rest.BannerUrl || '';
+          document.getElementById('rForm-description').value = rest.Description || '';
+          document.getElementById('rForm-pricemin').value = rest.PriceMin ?? '0';
+          document.getElementById('rForm-pricemax').value = rest.PriceMax ?? '0';
+          document.getElementById('rForm-opening').value = rest.OpeningTime || '08:00';
+          document.getElementById('rForm-closing').value = rest.ClosingTime || '22:00';
+          document.getElementById('rForm-isnew').checked = rest.IsNew || false;
+          document.getElementById('rForm-isfeatured').checked = rest.IsFeatured || false;
+
+          document.getElementById('restaurantFormModal').style.display = 'flex';
+      }
+
+      function closeFormModal() {
+          document.getElementById('restaurantFormModal').style.display = 'none';
+      }
+
+      async function deleteRestaurant(id) {
+          if (!confirm('Hành động nguy hiểm: Bạn có chắc chắn muốn XÓA VĨNH VIỄN quán ăn này khỏi hệ thống cơ sở dữ liệu? Tất cả dữ liệu liên quan sẽ bị xóa.')) return;
+          try {
+              await api.delete(`/admin/restaurants/${id}`);
+              toast.success('Đã xóa dữ liệu quán ăn thành công.');
+              loadAllRestaurants();
+              computeStats();
+          } catch(err) {
+              toast.error('Lỗi khi xóa quán ăn: ' + err.message);
+          }
+      }
+
+
+      // MEMBERS / USERS
+      async function loadUsers() {
+          const list = document.getElementById('users-list');
+          list.innerHTML = '<p>Đang tải danh sách thành viên...</p>';
+          try {
+              const res = await api.get('/admin/users');
+              allUsers = res.data || [];
+              renderUsersList(allUsers);
+          } catch(err) {
+              list.innerHTML = `<p style="color:red">Lỗi tải dữ liệu: ${err.message}</p>`;
+          }
+      }
+
+      function renderUsersList(data) {
+          const list = document.getElementById('users-list');
+          if(!data || data.length === 0) {
+              list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Không tìm thấy người dùng nào khớp điều kiện.</p>';
+              return;
+          }
+
+          list.innerHTML = data.map(user => {
+              const currentMe = auth.getUser();
+              const isSelf = currentMe && currentMe.id === user.Id;
+              
+              return `
+                  <div class="user-row">
+                     <div class="item-details">
+                        <h4>
+                            ${user.FullName} 
+                            <span class="badge badge--${user.Role.toLowerCase()}">${user.Role}</span>
+                            ${user.IsBanned ? '<span class="badge badge--banned">Đã cấm</span>' : ''}
+                            ${isSelf ? '<span class="badge badge--user" style="background:#fef08a;color:#ca8a04;">BẠN</span>' : ''}
+                        </h4>
+                        <p><strong>Địa chỉ Email:</strong> ${user.Email}</p>
+                        <p><strong>Ngày tạo tài khoản:</strong> ${new Date(user.CreatedAt).toLocaleString('vi-VN')}</p>
+                     </div>
+                     
+                     <div class="action-btns" style="align-items: center;">
+                         ${isSelf ? `<span class="text-xs text-slate-400 font-medium">Không thể cấu hình chính mình</span>` : `
+                             <select class="form-input" style="padding:4px 8px; font-size:13px; width: auto;" onchange="changeUserRole('${user.Id}', this.value)">
+                                 <option value="User" ${user.Role === 'User' ? 'selected' : ''}>User</option>
+                                 <option value="Manager" ${user.Role === 'Manager' ? 'selected' : ''}>Manager</option>
+                                 <option value="Admin" ${user.Role === 'Admin' ? 'selected' : ''}>Admin</option>
+                             </select>
+                             ${user.IsBanned 
+                                 ? `<button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:green; border-color:#dcfce7;" onclick="toggleUserBan('${user.Id}', false)">Mở khóa</button>`
+                                 : `<button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:red; border-color:#fee2e2;" onclick="toggleUserBan('${user.Id}', true)">Cấm và Khóa</button>`
+                             }
+                         `}
+                     </div>
+                  </div>
+              `;
+          }).join('');
+      }
+
+      function filterUsersInView() {
+          const query = document.getElementById('userSearchInput').value.toLowerCase().trim();
+          const role = document.getElementById('userRoleFilter').value;
+          
+          let filtered = allUsers;
+          if (query) {
+              filtered = filtered.filter(u => u.FullName.toLowerCase().includes(query) || u.Email.toLowerCase().includes(query));
+          }
+          if (role) {
+              filtered = filtered.filter(u => u.Role === role);
+          }
+          renderUsersList(filtered);
+      }
+
+      async function changeUserRole(id, role) {
+          if (!confirm(`Bạn có chắc chắn cấp quyền hạn "${role}" cho tài khoản này?`)) {
+              loadUsers();
+              return;
+          }
+          try {
+              await api.put(`/admin/users/${id}/role`, { role });
+              toast.success('Đã cập nhật vai trò người dùng thành công.');
+              loadUsers();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      async function toggleUserBan(id, isBanned) {
+          if (!confirm(`Bạn có chắc muốn ${isBanned ? 'CẤM VÀ KHÓA TRUY CẬP' : 'GỠ BỎ CẤM'} tài khoản người dùng này không?`)) return;
+          try {
+              await api.put(`/admin/users/${id}/ban`, { isBanned });
+              toast.success(isBanned ? 'Đã khóa tài khoản thành viên thành công.' : 'Đã gỡ cấm tài khoản thành viên thành công.');
+              loadUsers();
+              computeStats();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      // --- BRAND NEW FILE UPLOAD AND MENU MANAGEMENT SYSTEM ---
+      async function uploadRestaurantBanner(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        toast.info('Đang tải ảnh quán lên...');
+
+        const res = await api.postFormData(
+            '/admin/upload',
+            formData
+        );
+
+        document.getElementById('rForm-bannerurl').value = res.url;
+
+        toast.success('Đã tải ảnh lên thành công!');
+    } catch(err) {
+        toast.error('Lỗi khi tải ảnh lên: ' + err.message);
+    }
+}
+     async function uploadMenuItemPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        toast.info('Đang tải ảnh món ăn lên...');
+
+        const res = await api.postFormData(
+            '/admin/upload',
+            formData
+        );
+
+        document.getElementById('mForm-imageurl').value = res.url;
+
+        toast.success('Đã tải ảnh món ăn lên thành công!');
+    } catch(err) {
+        toast.error('Lỗi khi tải ảnh món: ' + err.message);
+    }
+}
+
+      let currentMenuRestId = '';
+      function openMenuModal(restId, name) {
+          currentMenuRestId = restId;
+          document.getElementById('menuModalTitle').textContent = `Thực đơn: ${name}`;
+          document.getElementById('mForm-restaurantId').value = restId;
+          resetMenuItemForm();
+          
+          document.getElementById('menuManageModal').style.display = 'flex';
+          loadRestaurantMenu(restId);
+      }
+
+      function closeMenuManageModal() {
+          document.getElementById('menuManageModal').style.display = 'none';
+      }
+
+      function resetMenuItemForm() {
+          document.getElementById('menuItemForm').reset();
+          document.getElementById('mForm-id').value = '';
+          document.getElementById('mForm-action').value = 'create';
+          document.getElementById('mForm-restaurantId').value = currentMenuRestId;
+          document.getElementById('menuItemFormTitle').textContent = 'Thêm món ăn mới';
+          document.getElementById('btnSaveMenuItem').textContent = 'Thêm món này';
+      }
+
+      async function loadRestaurantMenu(restId) {
+          const list = document.getElementById('menu-items-list');
+          const loadingMsg = document.getElementById('menu-loading-msg');
+          loadingMsg.style.display = 'block';
+          list.innerHTML = '';
+          
+          try {
+              const res = await api.get(`/admin/restaurants/${restId}/menu`);
+              const menuItems = res.data || [];
+              loadingMsg.style.display = 'none';
+              
+              if (menuItems.length === 0) {
+                  list.innerHTML = '<p style="text-align:center; color:var(--color-text-light); padding:20px; font-size:13px;">Thực đơn hiện tại rỗng. Hãy thêm món ăn đầu tiên bằng mẫu bên dưới!</p>';
+                  return;
+              }
+              
+              list.innerHTML = menuItems.map(item => {
+                  const priceFormatted = utils.formatPrice(item.Price || 0);
+                  const availableBadge = item.IsAvailable 
+                      ? '<span class="badge badge--approved" style="font-size:9px; padding:2px 6px;">Còn hàng</span>' 
+                      : '<span class="badge badge--rejected" style="font-size:9px; padding:2px 6px;">Hết hàng</span>';
+                  
+                  return `
+                      <div class="menu-item-row" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(226, 232, 240, 0.6); padding-bottom:8px; gap:12px;">
+                          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                              <img src="${item.ImageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=150'}" style="width:45px; height:45px; border-radius:6px; object-fit:cover; flex-shrink:0;">
+                              <div style="min-width:0; flex:1;">
+                                  <h5 style="margin:0; font-size:14px; font-weight:700; color:var(--color-secondary); display:flex; align-items:center; gap:6px;">
+                                      ${item.Name}
+                                      ${availableBadge}
+                                  </h5>
+                                  <p style="margin:2px 0 0; font-size:12px; color:var(--color-text-light); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-weight:450;">
+                                      ${item.Description || 'Không có mô tả sản phẩm.'}
+                                  </p>
+                              </div>
+                          </div>
+                          <div style="text-align:right; flex-shrink:0; display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                              <span style="font-weight:700; color:var(--color-primary); font-size:13px;">${priceFormatted}</span>
+                              <div style="display:flex; gap:6px;">
+                                  <button type="button" class="btn btn--outline" style="padding:2px 8px; font-size:11px; font-weight:700; border-color:var(--color-border); color:var(--color-secondary);" 
+                                      onclick="editMenuItem('${item.Id}', '${item.Name.replace(/'/g, "\\'")}', '${(item.Description || '').replace(/'/g, "\\'")}', ${item.Price}, '${item.ImageUrl || ''}', ${item.IsAvailable})">Sửa</button>
+                                  <button type="button" class="btn btn--outline" style="padding:2px 8px; font-size:11px; font-weight:700; color:red; border-color:#fee2e2;" 
+                                      onclick="deleteMenuItem('${item.Id}')">Xóa</button>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+              }).join('');
+          } catch(err) {
+              loadingMsg.style.display = 'none';
+              list.innerHTML = `<p style="color:red; font-size:12px;">Không thể tải danh sách thực đơn: ${err.message}</p>`;
+          }
+      }
+
+      async function handleMenuItemFormSubmit(e) {
+          e.preventDefault();
+          const action = document.getElementById('mForm-action').value;
+          const menuId = document.getElementById('mForm-id').value;
+          const restId = document.getElementById('mForm-restaurantId').value;
+          
+          const payload = {
+              Name: document.getElementById('mForm-name').value.trim(),
+              Price: parseInt(document.getElementById('mForm-price').value) || 0,
+              Description: document.getElementById('mForm-description').value.trim(),
+              ImageUrl: document.getElementById('mForm-imageurl').value.trim(),
+              IsAvailable: document.getElementById('mForm-isavailable').checked
+          };
+          
+          try {
+              if (action === 'create') {
+                  await api.post(`/admin/restaurants/${restId}/menu`, payload);
+                  toast.success('Đã thêm sản phẩm mới vào thực đơn!');
+              } else {
+                  await api.put(`/admin/menu/${menuId}`, payload);
+                  toast.success('Đã cập nhật món ăn thực đơn thành công.');
+              }
+              resetMenuItemForm();
+              loadRestaurantMenu(restId);
+          } catch(err) {
+              toast.error('Lỗi khi xử lý sản phẩm: ' + err.message);
+          }
+      }
+
+      function editMenuItem(id, name, desc, price, imgUrl, isAvailable) {
+          document.getElementById('menuItemFormTitle').textContent = `Sửa món: ${name}`;
+          document.getElementById('mForm-action').value = 'update';
+          document.getElementById('mForm-id').value = id;
+          
+          document.getElementById('mForm-name').value = name;
+          document.getElementById('mForm-price').value = price;
+          document.getElementById('mForm-description').value = desc;
+          document.getElementById('mForm-imageurl').value = imgUrl;
+          document.getElementById('mForm-isavailable').checked = !!isAvailable;
+          
+          document.getElementById('btnSaveMenuItem').textContent = 'Cập nhật món';
+      }
+
+      async function deleteMenuItem(id) {
+          if (!confirm('Bạn có chắc chắn muốn xóa rời món ăn này khỏi thực đơn?')) return;
+          try {
+              await api.delete(`/admin/menu/${id}`);
+              toast.success('Đã gỡ món ăn thành công.');
+              loadRestaurantMenu(currentMenuRestId);
+          } catch(err) {
+              toast.error('Lỗi khi xóa món ăn: ' + err.message);
+          }
+      }
+    </script>
+</body>
+</html>

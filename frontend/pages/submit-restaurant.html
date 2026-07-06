@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đề xuất quán ăn mới - Thổ Địa Ẩm Thực</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/main.css" />
+    <!-- Leaflet map CSS and JS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      .submit-layout {
+        max-width: 620px;
+        margin: var(--space-12) auto;
+        padding: 0 var(--space-4);
+      }
+      .submit-card {
+        background: var(--color-bg-soft);
+        padding: var(--space-10);
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(255, 90, 31, 0.08);
+        box-shadow: var(--shadow-lg);
+      }
+      .submit-card h2 {
+        font-family: var(--font-display);
+        font-size: var(--font-size-2xl);
+        font-weight: 850;
+        margin-bottom: var(--space-1.5);
+        text-align: center;
+        color: var(--color-secondary);
+      }
+      .form-row {
+        display: flex;
+        gap: var(--space-4);
+      }
+      .form-row > * {
+        flex: 1;
+      }
+      .success-state {
+        text-align: center;
+        padding: var(--space-8) 0;
+      }
+      .success-state h3 {
+        color: var(--color-success);
+        font-family: var(--font-display);
+        font-size: var(--font-size-xl);
+        font-weight: 850;
+        margin-bottom: var(--space-3);
+      }
+
+      /* Enhance preview image inside file dropzone */
+      #image-preview {
+        display: none;
+        margin: 16px auto 0 auto;
+        max-height: 180px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 2px solid #ffffff;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container submit-layout">
+      <div id="form-container" class="submit-card">
+        <h2>Đề xuất quán ăn mới</h2>
+        <p
+          style="
+            text-align: center;
+            color: var(--color-text-light);
+            margin-bottom: var(--space-6);
+          "
+        >
+          Giúp cộng đồng khám phá thêm những địa điểm ăn uống tuyệt vời!
+        </p>
+
+        <form
+          id="submitForm"
+          onsubmit="
+            event.preventDefault();
+            submitRestaurant();
+          "
+        >
+          <div class="form-group">
+            <label class="form-label">Tên quán ăn *</label>
+            <input
+              type="text"
+              id="sr_name"
+              class="form-input"
+              required
+              minlength="3"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Địa chỉ *</label>
+            <input
+              type="text"
+              id="sr_address"
+              class="form-input"
+              required
+              minlength="5"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Quận/Huyện</label>
+              <input type="text" id="sr_district" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Thành phố</label>
+              <input
+                type="text"
+                id="sr_city"
+                class="form-input"
+                value="Hà Nội"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Danh mục</label>
+            <select id="sr_category" class="form-input">
+              <option value="">Chọn danh mục</option>
+              <option value="Cafe">Cafe</option>
+              <option value="Cơm">Cơm</option>
+              <option value="Đồ ăn vặt">Đồ ăn vặt</option>
+              <option value="Nước">Nước</option>
+              <option value="Hải sản">Hải sản</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mô tả thêm</label>
+            <textarea
+              id="sr_description"
+              class="form-input"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Giá từ (VNĐ)</label>
+              <input
+                type="number"
+                id="sr_priceMin"
+                class="form-input"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Giá đến (VNĐ)</label>
+              <input
+                type="number"
+                id="sr_priceMax"
+                class="form-input"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <!-- Hidden lat / lng, we can add a button to get current location -->
+          <div
+            class="form-group"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              margin-bottom: 12px;
+              gap: 8px;
+            "
+          >
+            <div style="flex: 1">
+              <label
+                class="form-label"
+                style="font-weight: 700; margin: 0 0 6px 0"
+                >Ghim toạ độ bản đồ *</label
+              >
+              <div style="display: flex; gap: 8px">
+                <input
+                  type="text"
+                  id="sr_map_search"
+                  class="form-input"
+                  placeholder="Nhập địa chỉ để tìm..."
+                  style="font-size: 13px; padding: 6px 12px"
+                />
+                <button
+                  type="button"
+                  class="btn btn--primary"
+                  style="
+                    padding: 6px 16px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                  "
+                  onclick="searchMapAddress()"
+                >
+                  🔍 Tìm
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn--outline"
+              style="
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 600;
+                border-color: var(--color-border);
+                white-space: nowrap;
+                height: 35px;
+              "
+              onclick="getLocation()"
+            >
+              📌 Vị trí của tôi
+            </button>
+          </div>
+
+          <div
+            id="map-pin"
+            style="
+              height: 220px;
+              border-radius: var(--radius-lg);
+              border: 1.5px solid var(--color-border);
+              margin-bottom: 8px;
+              background: #eee;
+              z-index: 10;
+            "
+          ></div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--color-text-light);
+              margin-top: 0;
+              margin-bottom: 16px;
+              font-weight: 500;
+            "
+          >
+            Bấm bất kì đâu trên bản đồ, di chuyển ghim, hoặc tự nhập thông số
+            bên dưới.
+          </p>
+
+          <div class="form-row" style="margin-bottom: var(--space-4)">
+            <div class="form-group">
+              <label class="form-label" style="font-size: 11px"
+                >Vĩ độ (Latitude)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="sr_lat"
+                class="form-input"
+                placeholder="Latitude"
+                required
+                onchange="updateMapFromInputs()"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 11px"
+                >Kinh độ (Longitude)</label
+              >
+              <input
+                type="number"
+                step="any"
+                id="sr_lng"
+                class="form-input"
+                placeholder="Longitude"
+                required
+                onchange="updateMapFromInputs()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Ảnh nổi bật</label>
+            <div
+              class="upload-dropzone"
+              onclick="document.getElementById('sr_image').click()"
+            >
+              <p style="color: var(--color-primary); font-weight: 600">
+                📁 Nhấn để chọn ảnh
+              </p>
+              <p
+                style="
+                  font-size: var(--font-size-sm);
+                  color: var(--color-text-light);
+                "
+              >
+                Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB)
+              </p>
+              <input
+                type="file"
+                id="sr_image"
+                accept="image/jpeg, image/png, image/webp"
+                style="display: none"
+                onchange="previewImage(event)"
+              />
+              <img
+                id="image-preview"
+                style="display: none; margin: 16px auto 0 auto"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn--primary"
+            style="
+              width: 100%;
+              justify-content: center;
+              margin-top: var(--space-4);
+              font-size: var(--font-size-lg);
+            "
+            id="btnSubmit"
+          >
+            Gửi đề xuất
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      let map;
+      let marker;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        auth.requireLogin();
+        navbar.render();
+        initMapPin();
+      });
+
+      function initMapPin() {
+        const initialLat = 21.0285;
+        const initialLng = 105.8542;
+
+        document.getElementById("sr_lat").value = initialLat.toFixed(6);
+        document.getElementById("sr_lng").value = initialLng.toFixed(6);
+
+        map = L.map("map-pin").setView([initialLat, initialLng], 14);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap",
+        }).addTo(map);
+
+        marker = L.marker([initialLat, initialLng], {
+          draggable: true,
+        }).addTo(map);
+
+        marker.on("dragend", function (e) {
+          const position = marker.getLatLng();
+          document.getElementById("sr_lat").value = position.lat.toFixed(6);
+          document.getElementById("sr_lng").value = position.lng.toFixed(6);
+        });
+
+        map.on("click", function (e) {
+          marker.setLatLng(e.latlng);
+          document.getElementById("sr_lat").value = e.latlng.lat.toFixed(6);
+          document.getElementById("sr_lng").value = e.latlng.lng.toFixed(6);
+        });
+      }
+
+      function updateMapFromInputs() {
+        const lat = parseFloat(document.getElementById("sr_lat").value);
+        const lng = parseFloat(document.getElementById("sr_lng").value);
+        if (!isNaN(lat) && !isNaN(lng) && map && marker) {
+          marker.setLatLng([lat, lng]);
+          map.flyTo([lat, lng], 16);
+        }
+      }
+
+      async function searchMapAddress() {
+        const q = document.getElementById("sr_map_search").value.trim();
+        if (!q) {
+          toast.error("Vui lòng nhập địa chỉ để tìm");
+          return;
+        }
+        toast.info("Đang tìm kiếm...");
+        try {
+          const res = await fetch(
+            "https://nominatim.openstreetmap.org/search?format=json&q=" +
+              encodeURIComponent(q),
+          );
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            document.getElementById("sr_lat").value = lat.toFixed(6);
+            document.getElementById("sr_lng").value = lng.toFixed(6);
+            updateMapFromInputs();
+            toast.success("Đã tìm thấy vị trí!");
+          } else {
+            toast.error("Không tìm thấy toạ độ cho địa chỉ này.");
+          }
+        } catch (err) {
+          toast.error("Lỗi tìm kiếm: " + err.message);
+        }
+      }
+
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = pos.coords.latitude;
+              const lng = pos.coords.longitude;
+              document.getElementById("sr_lat").value = lat.toFixed(6);
+              document.getElementById("sr_lng").value = lng.toFixed(6);
+
+              if (map && marker) {
+                marker.setLatLng([lat, lng]);
+                map.flyTo([lat, lng], 16);
+              }
+
+              toast.success("Đã lấy vị trí thành công");
+            },
+            (err) => {
+              toast.error("Không thể lấy vị trí. Vui lòng cấp quyền.");
+            },
+          );
+        } else {
+          toast.error("Thiết bị không hỗ trợ định vị.");
+        }
+      }
+
+      function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.getElementById("image-preview");
+            img.src = e.target.result;
+            img.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      async function submitRestaurant() {
+        const btn = document.getElementById("btnSubmit");
+        btn.disabled = true;
+        btn.textContent = "Đang gửi...";
+
+        try {
+          const formData = new FormData();
+          formData.append("name", document.getElementById("sr_name").value);
+          formData.append(
+            "address",
+            document.getElementById("sr_address").value,
+          );
+
+          const district = document.getElementById("sr_district").value;
+          if (district) formData.append("district", district);
+
+          const city = document.getElementById("sr_city").value;
+          if (city) formData.append("city", city);
+
+          const category = document.getElementById("sr_category").value;
+          if (category) formData.append("category", category);
+
+          const desc = document.getElementById("sr_description").value;
+          if (desc) formData.append("description", desc);
+
+          const priceMin = document.getElementById("sr_priceMin").value;
+          if (priceMin) formData.append("suggestedPriceMin", priceMin);
+
+          const priceMax = document.getElementById("sr_priceMax").value;
+          if (priceMax) formData.append("suggestedPriceMax", priceMax);
+
+          const lat = document.getElementById("sr_lat").value;
+          if (lat) formData.append("latitude", lat);
+
+          const lng = document.getElementById("sr_lng").value;
+          if (lng) formData.append("longitude", lng);
+
+          const fileInput = document.getElementById("sr_image");
+          if (fileInput.files.length > 0) {
+            formData.append("image", fileInput.files[0]);
+          }
+
+          const res = await api.postFormData("/submissions", formData);
+
+          document.getElementById("form-container").innerHTML = `
+                <div class="success-state">
+                  <h3>✅ Cảm ơn bạn!</h3>
+                  <p>Đề xuất quán "${res.data ? res.data.Name : ""}" đang được xem xét.</p>
+                  <a href="/pages/index.html" class="btn btn--primary" style="margin-top:24px;">Về trang chủ</a>
+                </div>
+              `;
+          toast.success(res.message);
+        } catch (err) {
+          toast.error(err.message);
+          btn.disabled = false;
+          btn.textContent = "Gửi đề xuất";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .text-center { text-align: center; margin-top: 1.5rem; font-size: var(--font-size-sm); color: var(--color-text-light); font-weight: 550; }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="auth-container">
+      <div class="auth-header">
+        <h2>Chào mừng trở lại</h2>
+        <p>Đăng nhập tài khoản Thổ Địa Ẩm Thực của bạn</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu</label>
+          <div class="input-wrap">
+            <input type="password" id="password" class="form-input" style="width: 100%;" required>
+            <button type="button" class="toggle-pw" onclick="togglePw('password')">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Đăng nhập</button>
+        <p class="text-center">
+          Chưa có tài khoản? <a href="/pages/register.html" style="color: var(--color-primary); font-weight:600;">Đăng ký</a>
+        </p>
+      </form>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (auth.isLoggedIn()) {
+          window.location.href = '/pages/index.html';
+        }
+        navbar.render();
+      });
+
+      function togglePw(id) {
+        const el = document.getElementById(id);
+        el.type = el.type === 'password' ? 'text' : 'password';
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+          const res = await api.post('/auth/login', { email, password });
+          auth.setSession(res.data);
+          toast.success(res.message);
+          
+          const redirect = utils.getParam('redirect') || '/pages/index.html';
+          setTimeout(() => window.location.href = redirect, 1000);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+    </script>
+</body>
+</html>

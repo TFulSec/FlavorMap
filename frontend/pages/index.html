@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .category-chips { padding: var(--space-8) 0; }
+      .chips-wrap { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
+      .restaurant-section { padding: var(--space-12) 0; }
+      .restaurant-section h2 { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; margin-bottom: var(--space-8); color: var(--color-secondary); position: relative; display: inline-block; }
+      .restaurant-section h2::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 3px; background: var(--color-primary); border-radius: var(--radius-full); }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <section class="hero">
+      <div class="container">
+        <h1>Khám phá ẩm thực 
+          <select id="citySelect" style="display:inline-block; font-size: inherit; font-weight: inherit; color: var(--color-primary); background: transparent; border: none; border-bottom: 2px dashed var(--color-primary); cursor: pointer; outline: none; padding: 0 4px; appearance: none; -moz-appearance: none; -webkit-appearance: none;">
+            <option value="Hà Nội" selected>Hà Nội</option>
+            <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+            <option value="Hải Phòng">Hải Phòng</option>
+            <option value="Cần Thơ">Cần Thơ</option>
+            <option value="Huế">Huế</option>
+            <option value="Nha Trang">Nha Trang</option>
+            <option value="Đà Lạt">Đà Lạt</option>
+            <option value="">Toàn quốc</option>
+          </select>
+          <span style="font-size: 1rem; color: var(--color-primary); margin-left: -5px; pointer-events: none;">▼</span>
+        </h1>
+        <p>Tìm kiếm quán ăn ngon rẻ, được đánh giá cao bởi cộng đồng.</p>
+        <form class="hero__search" action="/pages/search.html" method="GET">
+          <input type="hidden" name="city" id="hiddenCity" value="Hà Nội">
+          <input type="text" name="q" placeholder="Nhập tên quán, món ăn, hoặc địa chỉ...">
+          <button type="submit" class="btn btn--primary">Tìm kiếm</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="category-chips">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: var(--space-8);">
+          <span style="color: var(--color-primary); font-weight: 800; font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Danh mục ẩm thực</span>
+          <h2 style="font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; color: var(--color-secondary);">Bạn hôm nay muốn ăn gì?</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4);">
+          <a href="/pages/search.html?category=Cafe" class="chip-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); background: var(--color-bg-soft); text-decoration: none; text-align: center; box-shadow: var(--shadow-sm); transition: all var(--transition);">
+            <span style="font-size: 2.5rem; transition: transform var(--transition);" class="chip-emoji">☕</span>
+            <span style="font-weight: 700; color: var(--color-secondary); font-size: var(--font-size-sm);">Cafe & Trà</span>
+          </a>
+          <a href="/pages/search.html?category=Cơm" class="chip-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); background: var(--color-bg-soft); text-decoration: none; text-align: center; box-shadow: var(--shadow-sm); transition: all var(--transition);">
+            <span style="font-size: 2.5rem; transition: transform var(--transition);" class="chip-emoji">🍚</span>
+            <span style="font-weight: 700; color: var(--color-secondary); font-size: var(--font-size-sm);">Cơm Văn Phòng</span>
+          </a>
+          <a href="/pages/search.html?category=Đồ+ăn+vặt" class="chip-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); background: var(--color-bg-soft); text-decoration: none; text-align: center; box-shadow: var(--shadow-sm); transition: all var(--transition);">
+            <span style="font-size: 2.5rem; transition: transform var(--transition);" class="chip-emoji">🍢</span>
+            <span style="font-weight: 700; color: var(--color-secondary); font-size: var(--font-size-sm);">Đồ Ăn Vặt</span>
+          </a>
+          <a href="/pages/search.html?category=Nước" class="chip-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); background: var(--color-bg-soft); text-decoration: none; text-align: center; box-shadow: var(--shadow-sm); transition: all var(--transition);">
+            <span style="font-size: 2.5rem; transition: transform var(--transition);" class="chip-emoji">🥤</span>
+            <span style="font-weight: 700; color: var(--color-secondary); font-size: var(--font-size-sm);">Giải Khát</span>
+          </a>
+          <a href="/pages/search.html?category=Hải+sản" class="chip-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); background: var(--color-bg-soft); text-decoration: none; text-align: center; box-shadow: var(--shadow-sm); transition: all var(--transition);">
+            <span style="font-size: 2.5rem; transition: transform var(--transition);" class="chip-emoji">🦐</span>
+            <span style="font-weight: 700; color: var(--color-secondary); font-size: var(--font-size-sm);">Hải Sản Tươi</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive CSS style for chip cards -->
+    <style>
+      .chip-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover) !important;
+        border-color: rgba(255, 90, 31, 0.25) !important;
+        background: var(--color-primary-light) !important;
+      }
+      .chip-card:hover .chip-emoji {
+        transform: scale(1.15) rotate(5deg);
+      }
+      .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(255, 90, 31, 0.2) !important;
+      }
+    </style>
+
+    <section class="restaurant-section" style="background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);">
+      <div class="container">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-6); margin: var(--space-12) 0;">
+          <div class="feature-card" style="background:#ffffff; padding: var(--space-6); border-radius: var(--radius-xl); border:1px solid rgba(226,232,240,0.8); transition: all var(--transition); display:flex; flex-direction:column; gap:12px;">
+            <div style="width:48px; height:48px; border-radius: var(--radius-lg); background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700;">🔍</div>
+            <h3 style="font-family:var(--font-display); font-weight:800; font-size:1.1rem; color:var(--color-secondary);">Bộ Lọc Đăng Đối</h3>
+            <p style="color:var(--color-text-light); font-size:var(--font-size-sm); line-height:1.5;">Lọc chuẩn xác quán ngon theo đúng túi tiền, thành phố, khoảng cách và danh mục của thổ địa.</p>
+          </div>
+          <div class="feature-card" style="background:#ffffff; padding: var(--space-6); border-radius: var(--radius-xl); border:1px solid rgba(226,232,240,0.8); transition: all var(--transition); display:flex; flex-direction:column; gap:12px;">
+            <div style="width:48px; height:48px; border-radius: var(--radius-lg); background:#ECFDF5; color:#059669; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700;">★</div>
+            <h3 style="font-family:var(--font-display); font-weight:800; font-size:1.1rem; color:var(--color-secondary);">Đánh Giá Chân Thực</h3>
+            <p style="color:var(--color-text-light); font-size:var(--font-size-sm); line-height:1.5;">Hệ thống review khách quan, minh bạch của dân sành ăn, đầy đủ thông tin thực đơn trực quan.</p>
+          </div>
+          <div class="feature-card" style="background:#ffffff; padding: var(--space-6); border-radius: var(--radius-xl); border:1px solid rgba(226,232,240,0.8); transition: all var(--transition); display:flex; flex-direction:column; gap:12px;">
+            <div style="width:48px; height:48px; border-radius: var(--radius-lg); background:#EFF6FF; color:#1D4ED8; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700;">📍</div>
+            <h3 style="font-family:var(--font-display); font-weight:800; font-size:1.1rem; color:var(--color-secondary);">Định Vị Tức Thời</h3>
+            <p style="color:var(--color-text-light); font-size:var(--font-size-sm); line-height:1.5;">Xem ngay lộ trình đường đi mượt mà với bản đồ số tương tác thông minh cho từng hàng quán.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="restaurant-section">
+      <div class="container">
+        <h2>🌟 Quán nổi bật</h2>
+        <div class="restaurant-grid" id="featured-grid"></div>
+      </div>
+    </section>
+
+    <section class="restaurant-section">
+      <div class="container">
+        <h2>🆕 Mới thêm gần đây</h2>
+        <div class="restaurant-grid" id="newest-grid"></div>
+        <div style="text-align:center; margin-top: 2rem;">
+          <a href="/pages/search.html" class="btn btn--outline" id="load-more">Xem tất cả</a>
+        </div>
+      </div>
+    </section>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/bookmarks.js"></script>
+    <script src="/assets/js/components/skeleton.js"></script>
+    <script src="/assets/js/components/card.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        navbar.render();
+        const fGrid = document.getElementById('featured-grid');
+        const nGrid = document.getElementById('newest-grid');
+        const citySelect = document.getElementById('citySelect');
+        const hiddenCity = document.getElementById('hiddenCity');
+        
+        await bookmarkManager.ensureLoaded();
+
+        async function loadRestaurants() {
+          const city = citySelect.value;
+          if (hiddenCity) hiddenCity.value = city;
+
+          skeleton.renderCards(fGrid, 8);
+          skeleton.renderCards(nGrid, 12);
+          
+          let fUrl = '/restaurants?type=featured&limit=8';
+          let nUrl = '/restaurants?type=newest&limit=12';
+          if (city) {
+              fUrl += `&city=${encodeURIComponent(city)}`;
+              nUrl += `&city=${encodeURIComponent(city)}`;
+          }
+
+          try {
+            const [fRes, nRes] = await Promise.all([
+              api.get(fUrl).catch(()=>({data:{data:[]}})),
+              api.get(nUrl).catch(()=>({data:{data:[]}}))
+            ]);
+            
+            if(fRes && fRes.data && fRes.data.data) {
+                if (fRes.data.data.length > 0) {
+                    fGrid.innerHTML = fRes.data.data.map(r => card.render(r)).join('');
+                } else {
+                    fGrid.innerHTML = '<p class="empty-state-small" style="grid-column: 1/-1">Không có quán nổi bật nào ở khu vực này.</p>';
+                }
+            }
+            if(nRes && nRes.data && nRes.data.data) {
+                if (nRes.data.data.length > 0) {
+                    nGrid.innerHTML = nRes.data.data.map(r => card.render(r)).join('');
+                } else {
+                    nGrid.innerHTML = '<p class="empty-state-small" style="grid-column: 1/-1">Không có quán mới nào ở khu vực này.</p>';
+                }
+            }
+          } catch(e) {
+            console.error(e);
+          }
+        }
+
+        citySelect.addEventListener('change', loadRestaurants);
+
+        // Load init
+        await loadRestaurants();
+      });
+    </script>
+</body>
+</html>

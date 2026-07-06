@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8); padding: var(--space-12) 0; }
+      .tabs { display: flex; flex-direction: column; gap: var(--space-3); }
+      .tab-btn { padding: 1rem 1.25rem; text-align: left; background: var(--color-bg-soft); border: 1px solid rgba(255, 90, 31, 0.08); border-radius: var(--radius-xl); font-weight: 700; cursor: pointer; transition: all var(--transition); color: var(--color-text-light); font-size: var(--font-size-sm); box-shadow: var(--shadow-sm); }
+      .tab-btn:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: rgba(255, 90, 31, 0.2); }
+      .tab-btn.active { background: var(--color-primary); color: #ffffff; border-color: var(--color-primary); box-shadow: 0 4px 12px rgba(255, 90, 31, 0.25); }
+      .tab-content { display: none; background: var(--color-bg-soft); padding: var(--space-8); border-radius: var(--radius-xl); box-shadow: var(--shadow-md); border: 1px solid rgba(255, 90, 31, 0.08); }
+      .tab-content.active { display: block; }
+      .avatar-wrap { display: flex; align-items: center; gap: var(--space-6); margin-bottom: var(--space-8); background: var(--color-primary-light); padding: var(--space-5); border-radius: var(--radius-xl); border: 1.5px dashed rgba(255, 90, 31, 0.25); }
+      .avatar-wrap img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: var(--shadow-md); }
+      .tab-content h2 { font-family: var(--font-display); font-size: var(--font-size-xl); font-weight: 850; color: var(--color-secondary); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 12px; }
+      @media (max-width: 768px) {
+        .profile-layout { grid-template-columns: 1fr; padding: var(--space-6) 0; }
+      }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="container profile-layout">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(0)">Thông tin cá nhân</button>
+        <button class="tab-btn" onclick="switchTab(1)">Đổi mật khẩu</button>
+      </div>
+
+      <div class="tab-contents">
+        <div class="tab-content active" id="tab-0">
+          <h2 style="margin-bottom: 24px;">Thông tin cá nhân</h2>
+          <form id="profileForm">
+            <div class="avatar-wrap">
+              <img id="avatarPreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=FlavorMap" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=FlavorMap'">
+              <div>
+                <input type="file" id="avatarFile" accept="image/jpeg, image/png, image/webp" style="display:none;" onchange="previewAvatar(event)" disabled>
+                <button type="button" class="btn btn--outline" onclick="document.getElementById('avatarFile').click()" disabled id="previewBtn">Tải ảnh lên</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email (Không thể thay đổi)</label>
+              <input type="email" id="pro-email" class="form-input" disabled style="background:#f3f4f6;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Họ và tên</label>
+              <input type="text" id="pro-fullName" class="form-input" required disabled>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số điện thoại</label>
+              <input type="text" id="pro-phone" class="form-input" disabled>
+            </div>
+            
+            <div style="margin-top: 24px;">
+                <button type="button" class="btn btn--primary" id="editBtn">Chỉnh sửa</button>
+                <button type="submit" class="btn btn--primary" id="saveBtn" style="display:none;">Lưu thay đổi</button>
+                <button type="button" class="btn btn--outline" id="cancelBtn" style="display:none;">Hủy</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="tab-content" id="tab-1">
+          <h2 style="margin-bottom: 24px;">Đổi mật khẩu</h2>
+          <form id="passwordForm">
+            <div class="form-group">
+              <label class="form-label">Mật khẩu hiện tại</label>
+              <div class="input-wrap">
+                <input type="password" id="curPw" class="form-input" style="width: 100%;" required>
+                <button type="button" class="toggle-pw" onclick="togglePw('curPw')">👁️</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mật khẩu mới</label>
+              <div class="input-wrap">
+                <input type="password" id="newPw" class="form-input" style="width: 100%;" required minlength="8">
+                <button type="button" class="toggle-pw" onclick="togglePw('newPw')">👁️</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Xác nhận mật khẩu mới</label>
+              <div class="input-wrap">
+                <input type="password" id="confPw" class="form-input" style="width: 100%;" required>
+                <button type="button" class="toggle-pw" onclick="togglePw('confPw')">👁️</button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn--primary" style="margin-top: 16px;">Cập nhật mật khẩu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      let currentProfile = {};
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        auth.requireLogin();
+        navbar.render();
+        await loadProfile();
+      });
+
+      function switchTab(index) {
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+        document.querySelectorAll('.tab-content').forEach((content, i) => content.classList.toggle('active', i === index));
+      }
+
+      function togglePw(id) {
+        const el = document.getElementById(id);
+        el.type = el.type === 'password' ? 'text' : 'password';
+      }
+
+      async function loadProfile() {
+        try {
+          const res = await api.get('/users/profile');
+          currentProfile = res.data;
+          resetProfileForm();
+        } catch (err) {
+          toast.error('Không thể tải hồ sơ');
+        }
+      }
+
+      function previewAvatar(event) {
+          const file = event.target.files[0];
+          if (file) {
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                  document.getElementById('avatarPreview').src = e.target.result;
+              }
+              reader.readAsDataURL(file);
+          }
+      }
+
+      function resetProfileForm() {
+        document.getElementById('pro-email').value = currentProfile.Email || '';
+        document.getElementById('pro-fullName').value = currentProfile.FullName || '';
+        document.getElementById('pro-phone').value = currentProfile.Phone || '';
+        if(currentProfile.AvatarUrl) {
+            document.getElementById('avatarPreview').src = currentProfile.AvatarUrl;
+        }
+
+        document.getElementById('pro-fullName').disabled = true;
+        document.getElementById('pro-phone').disabled = true;
+        document.getElementById('avatarFile').disabled = true;
+        document.getElementById('previewBtn').disabled = true;
+
+        document.getElementById('editBtn').style.display = 'inline-flex';
+        document.getElementById('saveBtn').style.display = 'none';
+        document.getElementById('cancelBtn').style.display = 'none';
+      }
+
+      document.getElementById('editBtn').addEventListener('click', () => {
+        document.getElementById('pro-fullName').disabled = false;
+        document.getElementById('pro-phone').disabled = false;
+        document.getElementById('avatarFile').disabled = false;
+        document.getElementById('previewBtn').disabled = false;
+
+        document.getElementById('editBtn').style.display = 'none';
+        document.getElementById('saveBtn').style.display = 'inline-flex';
+        document.getElementById('cancelBtn').style.display = 'inline-flex';
+      });
+
+      document.getElementById('cancelBtn').addEventListener('click', () => {
+        document.getElementById('avatarFile').value = '';
+        resetProfileForm();
+      });
+
+      document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+          fullName: document.getElementById('pro-fullName').value,
+          phone: document.getElementById('pro-phone').value,
+        };
+
+        try {
+          await api.put('/users/profile', data);
+          
+          const fileInput = document.getElementById('avatarFile');
+          if (fileInput.files.length > 0) {
+              const formData = new FormData();
+              formData.append('avatar', fileInput.files[0]);
+              await api.postFormData('/users/profile/avatar', formData);
+          }
+
+          toast.success('Cập nhật hồ sơ thành công');
+          await loadProfile();
+          // Cập nhật lại cache navbar nếu cần
+          const user = auth.getUser();
+          if (user) {
+              user.fullName = data.fullName;
+              if (currentProfile.AvatarUrl) user.avatarUrl = currentProfile.AvatarUrl;
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              navbar.render();
+          }
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+
+      document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const curPw = document.getElementById('curPw').value;
+        const newPw = document.getElementById('newPw').value;
+        const confPw = document.getElementById('confPw').value;
+
+        if(newPw !== confPw) {
+            toast.error('Xác nhận mật khẩu không khớp');
+            return;
+        }
+
+        try {
+          await api.put('/users/change-password', { currentPassword: curPw, newPassword: newPw });
+          toast.success('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+          setTimeout(() => {
+              auth.logout();
+              window.location.href = '/pages/login.html';
+          }, 2000);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+    </script>
+</body>
+</html>

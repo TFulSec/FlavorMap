@@ -1,0 +1,1500 @@
+openapi: 3.0.0
+
+info:
+  title: FlavorMap API
+  version: 1.0.0
+  description: FlavorMap Backend API Documentation
+
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+
+tags:
+  - name: Auth
+    description: Authentication APIs
+
+  - name: Users
+    description: User Profile APIs
+
+  - name: Restaurants
+    description: Restaurant APIs
+
+  - name: Reviews
+    description: Restaurant Reviews APIs
+
+  - name: Bookmarks
+    description: Favorite Restaurants APIs
+
+  - name: Submissions
+    description: Restaurant Submission APIs
+
+  - name: Admin
+    description: Admin Management APIs
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    ApiSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    ApiError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+
+        fullName:
+          type: string
+          example: Nguyễn Văn A
+
+        email:
+          type: string
+          example: nguyenvana@example.com
+
+        phone:
+          type: string
+          nullable: true
+
+        avatarUrl:
+          type: string
+          nullable: true
+
+        role:
+          type: string
+          example: User
+
+    Restaurant:
+      type: object
+      properties:
+        Id:
+          type: string
+
+        Name:
+          type: string
+          example: Phở Gia Truyền Bát Đàn
+
+        Slug:
+          type: string
+          example: pho-gia-truyen-bat-dan
+
+        Description:
+          type: string
+          nullable: true
+
+        Address:
+          type: string
+
+        City:
+          type: string
+
+        District:
+          type: string
+          nullable: true
+
+        Latitude:
+          type: number
+          nullable: true
+
+        Longitude:
+          type: number
+          nullable: true
+
+        Category:
+          type: string
+
+        PriceMin:
+          type: integer
+
+        PriceMax:
+          type: integer
+
+        OpeningTime:
+          type: string
+          example: "07:00"
+
+        ClosingTime:
+          type: string
+          example: "22:00"
+
+        BannerUrl:
+          type: string
+          nullable: true
+
+        Rating:
+          type: number
+          example: 4.7
+
+        IsFeatured:
+          type: boolean
+
+        IsNew:
+          type: boolean
+
+    MenuItem:
+      type: object
+      properties:
+        Id:
+          type: string
+
+        Name:
+          type: string
+
+        Description:
+          type: string
+
+        Price:
+          type: integer
+
+        ImageUrl:
+          type: string
+
+        IsAvailable:
+          type: boolean
+
+    MenuItemCreateRequest:
+      type: object
+
+      required:
+        - Name
+        - Price
+
+      properties:
+        Name:
+          type: string
+          example: Phở tái
+
+        Description:
+          type: string
+          nullable: true
+          example: Bò tái mềm
+
+        Price:
+          type: integer
+          example: 60000
+
+        ImageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/pho.jpg
+
+        IsAvailable:
+          type: boolean
+          example: true
+
+    ReviewRequest:
+      type: object
+      required:
+        - rating
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+
+        comment:
+          type: string
+          maxLength: 1000
+          example: Rất ngon
+
+    SubmissionRequest:
+      type: object
+      required:
+        - name
+        - address
+      properties:
+        image:
+          type: string
+          format: binary
+
+        name:
+          type: string
+          minLength: 3
+          maxLength: 200
+
+        address:
+          type: string
+          minLength: 5
+
+        district:
+          type: string
+
+        city:
+          type: string
+
+        category:
+          type: string
+
+        description:
+          type: string
+
+        suggestedPriceMin:
+          type: number
+
+        suggestedPriceMax:
+          type: number
+
+        latitude:
+          type: number
+
+        longitude:
+          type: number
+
+paths:
+
+  ########################################################
+  # AUTH
+  ########################################################
+
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+
+      summary: Đăng ký tài khoản
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - fullName
+                - email
+                - password
+                - confirmPassword
+
+              properties:
+
+                fullName:
+                  type: string
+                  example: Nguyễn Văn A
+
+                email:
+                  type: string
+                  example: nguyenvana@example.com
+
+                password:
+                  type: string
+                  example: password123
+
+                confirmPassword:
+                  type: string
+                  example: password123
+
+      responses:
+
+        '201':
+          description: Đăng ký thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đăng ký thành công!
+
+        '400':
+          description: Dữ liệu không hợp lệ
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Dữ liệu không hợp lệ.
+                errors:
+                  - "\"confirmPassword\" is required"
+
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+
+      summary: Đăng nhập
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - email
+                - password
+
+              properties:
+
+                email:
+                  type: string
+
+                password:
+                  type: string
+
+      responses:
+
+        '200':
+          description: Đăng nhập thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đăng nhập thành công!
+                data:
+                  user:
+                    id: user-id
+                    fullName: Nguyễn Văn A
+                    email: nguyenvana@example.com
+                    role: User
+
+                  accessToken: jwt-token
+                  refreshToken: refresh-token
+
+        '400':
+          description: Thiếu email hoặc mật khẩu
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Vui lòng nhập email và mật khẩu.
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+
+      summary: Đăng xuất
+
+      requestBody:
+        required: false
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                refreshToken:
+                  type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đăng xuất thành công.
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Auth
+
+      summary: Refresh Access Token
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - refreshToken
+
+              properties:
+
+                refreshToken:
+                  type: string
+
+      responses:
+
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  accessToken: new-access-token
+
+        '400':
+          description: Thiếu refresh token
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Thiếu refresh token.
+  ########################################################
+  # USERS
+  ########################################################
+
+  /api/users/profile:
+    get:
+      tags:
+        - Users
+
+      summary: Lấy thông tin cá nhân
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  id: user-id
+                  fullName: Nguyễn Văn A
+                  email: nguyenvana@example.com
+                  phone: "0987654321"
+                  avatarUrl: /uploads/avatar.jpg
+                  role: User
+
+    put:
+      tags:
+        - Users
+
+      summary: Cập nhật hồ sơ
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                fullName:
+                  type: string
+
+                phone:
+                  type: string
+
+                avatarUrl:
+                  type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Cập nhật thành công
+                data:
+                  id: user-id
+                  fullName: Nguyễn Văn B
+                  phone: "0987654321"
+                  avatarUrl: /uploads/avatar.jpg
+
+  /api/users/profile/avatar:
+    post:
+      tags:
+        - Users
+
+      summary: Upload ảnh đại diện
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+
+              required:
+                - avatar
+
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+
+      responses:
+        '200':
+          description: Upload thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Cập nhật ảnh đại diện thành công
+                data:
+                  avatarUrl: /uploads/submissions/avatar.jpg
+
+        '400':
+          description: Không có file
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Vui lòng chọn ảnh.
+
+  /api/users/change-password:
+    put:
+      tags:
+        - Users
+
+      summary: Đổi mật khẩu
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                currentPassword:
+                  type: string
+
+                newPassword:
+                  type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đổi mật khẩu thành công. Vui lòng đăng nhập lại.
+
+  ########################################################
+  # RESTAURANTS
+  ########################################################
+
+  /api/restaurants:
+    get:
+      tags:
+        - Restaurants
+
+      summary: Danh sách quán ăn
+
+      parameters:
+
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - featured
+              - newest
+
+        - name: city
+          in: query
+          schema:
+            type: string
+
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+              example:
+                success: true
+                data:
+                  data:
+                    - Id: E4A2F16C-0297-45FA-9182-310696040E13
+                      Name: Phở Gia Truyền Bát Đàn
+                      Slug: pho-gia-truyen-bat-dan
+                      Address: 49 Bát Đàn
+                      City: Hà Nội
+                      Category: Phở
+                      PriceMin: 40000
+                      PriceMax: 60000
+                      BannerUrl: https://example.com/image.jpg
+                      Rating: 4.8
+                      IsFeatured: true
+                      IsNew: false
+                      OpeningTime: "06:00"
+                      ClosingTime: "22:00"
+
+                  total: 100
+                  page: 1
+                  totalPages: 9
+
+  /api/restaurants/search:
+    get:
+      tags:
+        - Restaurants
+
+      summary: Tìm kiếm quán ăn
+
+      parameters:
+
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+
+        - name: page
+          in: query
+          schema:
+            type: integer
+
+        - name: limit
+          in: query
+          schema:
+            type: integer
+
+      responses:
+
+        '200':
+          description: Thành công
+
+        '400':
+          description: Thiếu từ khóa
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Vui lòng nhập từ khóa tìm kiếm.
+
+  /api/restaurants/filter:
+    get:
+      tags:
+        - Restaurants
+
+      summary: Lọc quán ăn
+
+      parameters:
+
+        - name: category
+          in: query
+          schema:
+            type: string
+
+        - name: city
+          in: query
+          schema:
+            type: string
+
+        - name: q
+          in: query
+          schema:
+            type: string
+
+        - name: priceMin
+          in: query
+          schema:
+            type: integer
+
+        - name: priceMax
+          in: query
+          schema:
+            type: integer
+
+        - name: lat
+          in: query
+          schema:
+            type: number
+
+        - name: lng
+          in: query
+          schema:
+            type: number
+
+        - name: radius
+          in: query
+          schema:
+            type: number
+
+        - name: page
+          in: query
+          schema:
+            type: integer
+
+        - name: limit
+          in: query
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: Thành công
+
+  /api/restaurants/{slug}:
+    get:
+      tags:
+        - Restaurants
+
+      summary: Chi tiết quán ăn
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  Id: E4A2F16C-0297-45FA-9182-310696040E13
+                  Name: Phở Gia Truyền Bát Đàn
+                  Slug: pho-gia-truyen-bat-dan
+                  Description: Phở gia truyền lâu năm
+                  Address: 49 Bát Đàn
+                  City: Hà Nội
+                  District: Hoàn Kiếm
+                  Latitude: 21.034
+                  Longitude: 105.848
+                  Category: Phở
+                  PriceMin: 40000
+                  PriceMax: 60000
+                  OpeningTime: "06:00"
+                  ClosingTime: "22:00"
+                  BannerUrl: https://example.com/image.jpg
+                  Rating: 4.8
+                  IsFeatured: true
+
+                  menuItems:
+                    - Id: menu-1
+                      Name: Phở tái
+                      Description: Phở bò tái
+                      Price: 50000
+                      ImageUrl: https://example.com/pho.jpg
+                      IsAvailable: true
+
+        '404':
+          description: Không tìm thấy quán
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Không tìm thấy quán ăn.
+  ########################################################
+  # REVIEWS
+  ########################################################
+
+  /api/restaurants/{slug}/reviews:
+    get:
+      tags:
+        - Reviews
+
+      summary: Danh sách đánh giá của quán
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  - id: review-1
+                    userId: user-1
+                    fullName: Nguyễn Văn A
+                    rating: 5
+                    comment: Rất ngon
+                    createdAt: "2026-06-24T10:00:00Z"
+
+    post:
+      tags:
+        - Reviews
+
+      summary: Tạo hoặc cập nhật đánh giá
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Cảm ơn bạn đã đánh giá!
+
+        '400':
+          description: Dữ liệu không hợp lệ
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Vui lòng chọn số sao đánh giá.
+
+    delete:
+      tags:
+        - Reviews
+
+      summary: Xóa đánh giá của tôi
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã xoá đánh giá.
+
+  ########################################################
+  # BOOKMARKS
+  ########################################################
+
+  /api/restaurants/{slug}/bookmark:
+    post:
+      tags:
+        - Bookmarks
+
+      summary: Lưu quán ăn yêu thích
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã lưu quán ăn yêu thích
+
+    delete:
+      tags:
+        - Bookmarks
+
+      summary: Bỏ lưu quán ăn
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã bỏ lưu quán ăn
+
+  /api/bookmarks:
+    get:
+      tags:
+        - Bookmarks
+
+      summary: Danh sách quán yêu thích
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data: []
+
+  /api/bookmarks/ids:
+    get:
+      tags:
+        - Bookmarks
+
+      summary: Danh sách ID bookmark
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  - 43E85B05-B17E-48FE-B6AB-F9AFCAB512B7
+                  - E4A2F16C-0297-45FA-9182-310696040E13
+
+  ########################################################
+  # SUBMISSIONS
+  ########################################################
+
+  /api/submissions:
+    post:
+      tags:
+        - Submissions
+
+      summary: Gửi đề xuất quán ăn mới
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmissionRequest'
+
+      responses:
+
+        '201':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Cảm ơn bạn! Đề xuất đang được xem xét.
+                data:
+                  Id: mock-123456
+                  Status: Pending
+
+        '400':
+          description: Dữ liệu không hợp lệ
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Vui lòng nhập tên quán ăn.
+
+  ########################################################
+  # ADMIN
+  ########################################################
+
+  /api/admin/upload:
+    post:
+      tags:
+        - Admin
+
+      summary: Upload file
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+
+              required:
+                - file
+
+              properties:
+                file:
+                  type: string
+                  format: binary
+
+      responses:
+
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                url: /uploads/submissions/example.jpg
+
+        '400':
+          description: Không có file
+
+          content:
+            application/json:
+              example:
+                success: false
+                message: Không có file tải lên
+
+  /api/admin/users:
+    get:
+      tags:
+        - Admin
+
+      summary: Danh sách người dùng
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Thành công
+
+  /api/admin/users/{id}/role:
+    put:
+      tags:
+        - Admin
+
+      summary: Cập nhật vai trò người dùng
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                role:
+                  type: string
+                  example: Admin
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã cập nhật vai trò
+
+  /api/admin/users/{id}/ban:
+    put:
+      tags:
+        - Admin
+
+      summary: Khóa hoặc mở khóa tài khoản
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                isBanned:
+                  type: boolean
+
+      responses:
+        '200':
+          description: Thành công
+
+  /api/admin/restaurants:
+    get:
+      tags:
+        - Admin
+
+      summary: Danh sách quán ăn
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Thành công
+
+    post:
+      tags:
+        - Admin
+
+      summary: Thêm quán ăn
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Restaurant'
+
+      responses:
+        '201':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã tạo quán ăn mới thành công
+
+  /api/admin/restaurants/{id}:
+    put:
+      tags:
+        - Admin
+
+      summary: Cập nhật quán ăn
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã cập nhật quán
+
+    delete:
+      tags:
+        - Admin
+
+      summary: Xóa quán ăn
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã xóa quán ăn thành công
+
+  /api/admin/restaurants/{restaurantId}/menu:
+    get:
+      tags:
+        - Admin
+
+      summary: Danh sách menu của quán
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: restaurantId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+      post:
+    tags:
+      - Admin
+
+    summary: Thêm món ăn
+
+    security:
+      - bearerAuth: []
+
+    parameters:
+      - name: restaurantId
+        in: path
+        required: true
+        schema:
+          type: string
+
+    requestBody:
+      required: true
+
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MenuItemCreateRequest'
+
+          example:
+            Name: Phở tái
+            Description: Bò tái mềm
+            Price: 60000
+            ImageUrl: https://example.com/pho.jpg
+            IsAvailable: true
+
+    responses:
+      '201':
+        description: Thành công
+
+        content:
+          application/json:
+            example:
+              success: true
+              message: Đã thêm món ăn mới
+              data:
+                Id: "A1234567-B89C-4DEF-9012-3456789ABCDE"
+
+  /api/admin/menu/{id}:
+    put:
+      tags:
+        - Admin
+
+      summary: Cập nhật món ăn
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã cập nhật món ăn
+
+    delete:
+      tags:
+        - Admin
+
+      summary: Xóa món ăn
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã xóa món ăn thành công
+
+  /api/admin/submissions:
+    get:
+      tags:
+        - Admin
+
+      summary: Danh sách đề xuất
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            example: Pending
+
+      responses:
+        '200':
+          description: Thành công
+
+  /api/admin/submissions/{id}/status:
+    put:
+      tags:
+        - Admin
+
+      summary: Cập nhật trạng thái đề xuất
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - Pending
+                    - Approved
+                    - Rejected
+
+      responses:
+        '200':
+          description: Thành công
+
+          content:
+            application/json:
+              example:
+                success: true
+                message: Đã cập nhật trạng thái              
