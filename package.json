@@ -1,0 +1,42 @@
+{
+  "name": "flavormap",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node backend/src/app.js",
+    "dev": "node backend/src/app.js",
+    "build": "echo 'No build required' && exit 0",
+    "lint": "echo 'No linting' && exit 0",
+    "check": "node tests/check-js.js",
+    "test:sprint4": "node tests/sprint4.mock.test.js",
+    "test:owner-portal": "node tests/owner-portal.mock.test.js",
+    "test:product-workflow": "node tests/product-workflow.mock.test.js",
+    "test:review-moderation": "node tests/review-moderation.mock.test.js",
+    "test:usability": "node tests/usability.mock.test.js",
+    "test:auth-navigation": "node tests/auth-navigation-regression.test.js",
+    "test:swagger": "node tests/swagger-deployment.test.js",
+    "test:vote-toggle": "node tests/vote-toggle.mock.test.js",
+    "test:all": "npm run check && npm run test:sprint4 && npm run test:owner-portal && npm run test:product-workflow && npm run test:review-moderation && npm run test:usability && npm run test:auth-navigation && npm run test:swagger && npm run test:vote-toggle"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "joi": "^18.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "jszip": "^3.10.1",
+    "morgan": "^1.11.0",
+    "mssql": "^12.5.5",
+    "multer": "^2.2.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "description": "FlavorMap (Thổ Địa Ẩm Thực) - mã nguồn tích hợp Sprint 4 và Sprint 5.",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  }
+}

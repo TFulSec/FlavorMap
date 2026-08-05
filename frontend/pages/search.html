@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám phá - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .search-layout { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-8); padding: var(--space-12) 0; }
+      .filter-panel { background: var(--color-bg-soft); border: 1px solid rgba(255, 90, 31, 0.08); border-radius: var(--radius-xl); padding: var(--space-6); position: sticky; top: 100px; height: fit-content; box-shadow: var(--shadow-md); }
+      .filter-panel h3 { font-family: var(--font-display); font-size: var(--font-size-lg); font-weight: 800; margin-bottom: var(--space-6); color: var(--color-secondary); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 10px; }
+      .filter-section { margin-bottom: var(--space-6); }
+      .filter-section h4 { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-secondary); margin-bottom: var(--space-3); letter-spacing: -0.01em; text-transform: uppercase; font-size: 0.75rem; color: var(--color-text-light); }
+      .checkbox-list { display: flex; flex-direction: column; gap: var(--space-2); }
+      .checkbox-list label { display: flex; align-items: center; gap: var(--space-2.5); font-size: var(--font-size-sm); cursor: pointer; color: var(--color-text); font-weight: 550; }
+      .checkbox-list input[type="radio"] { accent-color: var(--color-primary); width: 16px; height: 16px; }
+      .search-header { margin-bottom: var(--space-8); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-4); }
+      .search-header h2 { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; color: var(--color-secondary); }
+      .search-header p   { color: var(--color-text-light); font-weight: 500; font-size: var(--font-size-sm); margin-top: 4px; }
+      .empty-state { text-align: center; padding: var(--space-16); color: var(--color-text-light); background: var(--color-bg-soft); border-radius: var(--radius-xl); border: 1.5px dashed var(--color-border); }
+      .empty-state p { font-size: var(--font-size-lg); margin-top: var(--space-4); }
+      .pagination { display: flex; justify-content: center; gap: var(--space-3); margin-top: var(--space-12); align-items: center;}
+      .page-btn { padding: var(--space-2.5) var(--space-5); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; font-weight: 650; background: var(--color-bg-soft); transition: all var(--transition); border-color: rgba(255, 90, 31, 0.1); box-shadow: var(--shadow-sm); font-size: var(--font-size-sm); }
+      .page-btn:hover:not(:disabled) { background: var(--color-primary); color: #fff; border-color: var(--color-primary); transform: translateY(-1px); }
+      .page-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+      
+      .top-search { width: 100%; padding: var(--space-3) var(--space-4); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); font-size: var(--font-size-base); margin-bottom: var(--space-4); transition: all var(--transition); color: var(--color-secondary); font-weight: 550; outline: none; }
+      .top-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.16); }
+      
+      /* Price range styling */
+      input[type="range"] {
+        accent-color: var(--color-primary);
+        height: 6px;
+        border-radius: var(--radius-full);
+        background: #E2E8F0;
+        outline: none;
+      }
+
+      @media (max-width: 768px) {
+        .search-layout { grid-template-columns: 1fr; padding: var(--space-6) 0; }
+        .filter-panel  { position: static; box-shadow: var(--shadow-sm); }
+      }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="container search-layout">
+      <aside class="filter-panel">
+        <h3>Bộ lọc</h3>
+        <input type="text" id="searchInput" class="top-search" placeholder="Từ khóa...">
+        
+        <div class="filter-section">
+          <h4>Thành phố</h4>
+          <select id="citySelect" class="form-input" style="width: 100%; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 8px;">
+            <option value="">Tất cả</option>
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+            <option value="Hải Phòng">Hải Phòng</option>
+            <option value="Cần Thơ">Cần Thơ</option>
+            <option value="Huế">Huế</option>
+            <option value="Nha Trang">Nha Trang</option>
+            <option value="Đà Lạt">Đà Lạt</option>
+          </select>
+        </div>
+
+        <div class="filter-section">
+          <h4>Danh mục</h4>
+          <div class="checkbox-list">
+            <label><input type="radio" name="category" value=""> Tất cả</label>
+            <label><input type="radio" name="category" value="Cafe"> ☕ Cafe & Trà</label>
+            <label><input type="radio" name="category" value="Cơm"> 🍜 Món Việt (bún, phở, cơm...)</label>
+            <label><input type="radio" name="category" value="Đồ ăn vặt"> 🍢 Đồ ăn vặt</label>
+            <label><input type="radio" name="category" value="Nước"> 🥤 Đồ uống</label>
+            <label><input type="radio" name="category" value="Hải sản"> 🦐 Hải sản</label>
+            <label><input type="radio" name="category" value="Khác"> 🍽 Khác</label>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Khoảng giá (tối đa)</h4>
+          <input type="range" id="priceRange" min="0" max="1000000" step="50000" style="width:100%;">
+          <div style="text-align: right; font-size: 14px; font-weight:600; color:var(--color-primary);" id="priceLabel">Bất kỳ</div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Khoảng cách</h4>
+          <div class="checkbox-list">
+            <label><input type="radio" name="radius" value="" checked> Bất kỳ</label>
+            <label><input type="radio" name="radius" value="1"> < 1 km</label>
+            <label><input type="radio" name="radius" value="3"> < 3 km</label>
+            <label><input type="radio" name="radius" value="5"> < 5 km</label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap: 8px; flex-direction:column;">
+            <button class="btn btn--primary" id="applyFilter" style="justify-content:center;">Áp dụng bộ lọc</button>
+            <button class="btn btn--outline" id="clearFilter" style="justify-content:center;">Xóa bộ lọc</button>
+            <a class="btn btn--outline" href="/pages/recommend.html" style="justify-content:center;">✨ Gợi ý theo nhu cầu</a>
+        </div>
+      </aside>
+
+      <main>
+        <div class="search-header">
+          <h2 id="resultTitle">Đang tìm kiếm...</h2>
+          <p id="resultCount"></p>
+        </div>
+        
+        <div class="restaurant-grid" id="search-grid"></div>
+
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="page-btn" id="prevPage">Trước</button>
+            <span id="pageInfo" style="font-weight:600; font-size:14px;"></span>
+            <button class="page-btn" id="nextPage">Tiếp</button>
+        </div>
+      </main>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/bookmarks.js"></script>
+    <script src="/assets/js/components/skeleton.js"></script>
+    <script src="/assets/js/components/card.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      let currentPage = 1;
+      let totalPages = 1;
+      let currentLat = null;
+      let currentLng = null;
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        navbar.render();
+        initFiltersFromUrl();
+        setupEvents();
+        await bookmarkManager.ensureLoaded();
+        fetchResults();
+      });
+
+      function initFiltersFromUrl() {
+        const q = utils.getParam('q') || '';
+        const cat = utils.getParam('category') || '';
+        const pMax = utils.getParam('priceMax') || '';
+        const rad = utils.getParam('radius') || '';
+        const city = utils.getParam('city') || '';
+
+        document.getElementById('searchInput').value = q;
+        if (city) document.getElementById('citySelect').value = city;
+
+        if (cat) {
+            const radCat = document.querySelector(`input[name="category"][value="${cat}"]`);
+            if(radCat) radCat.checked = true;
+        } else {
+            document.querySelector(`input[name="category"][value=""]`).checked = true;
+        }
+
+        if (pMax) {
+            document.getElementById('priceRange').value = pMax;
+            document.getElementById('priceLabel').textContent = utils.formatPrice(pMax);
+        } else {
+            document.getElementById('priceRange').value = 0;
+            document.getElementById('priceLabel').textContent = 'Bất kỳ';
+        }
+
+        if (rad) {
+             const radRad = document.querySelector(`input[name="radius"][value="${rad}"]`);
+             if(radRad) radRad.checked = true;
+        }
+      }
+
+      function setupEvents() {
+        document.getElementById('priceRange').addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('priceLabel').textContent = val == 0 ? 'Bất kỳ' : utils.formatPrice(val);
+        });
+
+        document.getElementById('applyFilter').addEventListener('click', () => {
+            currentPage = 1;
+            updateUrlAndFetch();
+        });
+
+        document.getElementById('clearFilter').addEventListener('click', () => {
+            window.location.href = '/pages/search.html';
+        });
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if(currentPage > 1) { currentPage--; updateUrlAndFetch(); }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if(currentPage < totalPages) { currentPage++; updateUrlAndFetch(); }
+        });
+
+        const debounceSearch = utils.debounce(() => {
+            currentPage = 1;
+            updateUrlAndFetch();
+        }, 500);
+
+        document.getElementById('searchInput').addEventListener('input', debounceSearch);
+        document.getElementById('citySelect').addEventListener('change', () => {
+            currentPage = 1;
+            updateUrlAndFetch();
+        });
+      }
+
+      async function updateUrlAndFetch() {
+          const q = document.getElementById('searchInput').value;
+          const cat = document.querySelector('input[name="category"]:checked').value;
+          const pMax = document.getElementById('priceRange').value;
+          const rad = document.querySelector('input[name="radius"]:checked').value;
+          const city = document.getElementById('citySelect').value;
+
+          const params = new URLSearchParams();
+          if(q) params.set('q', q);
+          if(cat) params.set('category', cat);
+          if(pMax > 0) params.set('priceMax', pMax);
+          if(rad) params.set('radius', rad);
+          if(city) params.set('city', city);
+          if(currentPage > 1) params.set('page', currentPage);
+
+          const newUrl = window.location.pathname + '?' + params.toString();
+          window.history.pushState({}, '', newUrl);
+
+          if (rad && (!currentLat || !currentLng)) {
+              if (navigator.geolocation) {
+                  try {
+                      const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
+                      currentLat = pos.coords.latitude;
+                      currentLng = pos.coords.longitude;
+                  } catch(e) {
+                      toast.error('Không thể lấy vị trí. Sẽ bỏ qua khoảng cách.');
+                      document.querySelector('input[name="radius"][value=""]').checked = true;
+                  }
+              }
+          }
+
+          fetchResults();
+      }
+
+      async function fetchResults() {
+        const grid = document.getElementById('search-grid');
+        skeleton.renderCards(grid, 8);
+        document.getElementById('resultTitle').textContent = 'Đang tìm kiếm...';
+        document.getElementById('resultCount').textContent = '';
+        document.getElementById('pagination').style.display = 'none';
+
+        const q = utils.getParam('q') || '';
+        const cat = utils.getParam('category') || '';
+        const pMax = utils.getParam('priceMax') || '';
+        const rad = utils.getParam('radius') || '';
+        const city = utils.getParam('city') || '';
+        const page = utils.getParam('page') || 1;
+
+        let endpoint = '/restaurants';
+        const queryArgs = new URLSearchParams();
+        queryArgs.set('page', page);
+        queryArgs.set('limit', 12);
+
+        if (q && !cat && !pMax && !rad && !city) {
+            endpoint = '/restaurants/search';
+            queryArgs.set('q', q);
+        } else if (cat || pMax || rad || city || q) {
+            endpoint = '/restaurants/filter';
+            if(q) queryArgs.set('q', q);
+            if(cat) queryArgs.set('category', cat);
+            if(pMax) queryArgs.set('priceMax', pMax);
+            if(city) queryArgs.set('city', city);
+            if(rad && currentLat) {
+                queryArgs.set('radius', rad);
+                queryArgs.set('lat', currentLat);
+                queryArgs.set('lng', currentLng);
+            }
+        } // if no args it just gets all restaurants? or maybe we append q if mixing?
+        
+        if(endpoint === '/restaurants/filter' && q) {
+            // Backend in our setup doesn't mix Q into filter implicitly except by name matching, but let's assume it doesn't break
+        }
+
+        try {
+            const res = await api.get(`${endpoint}?${queryArgs.toString()}`);
+            const { data, total, page: resPage, totalPages: tPages } = res.data;
+            
+            currentPage = resPage;
+            totalPages = tPages;
+
+            document.getElementById('resultTitle').textContent = q ? `Kết quả cho "${q}"` : 'Tất cả quán ăn';
+            document.getElementById('resultCount').textContent = `Tìm thấy ${total} quán`;
+
+            if(data.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><p>Không tìm thấy quán nào. Thử từ khóa khác?</p></div>`;
+            } else {
+                grid.innerHTML = data.map(r => card.render(r)).join('');
+            }
+
+            if (totalPages > 1) {
+                document.getElementById('pagination').style.display = 'flex';
+                document.getElementById('pageInfo').textContent = `Trang ${currentPage} / ${totalPages}`;
+                document.getElementById('prevPage').disabled = currentPage === 1;
+                document.getElementById('nextPage').disabled = currentPage === totalPages;
+            }
+        } catch(e) {
+            grid.innerHTML = `<div class="empty-state"><p>Lỗi khi tải dữ liệu.</p></div>`;
+        }
+      }
+    </script>
+</body>
+</html>

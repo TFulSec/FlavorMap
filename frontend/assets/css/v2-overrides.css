@@ -1,0 +1,79 @@
+/* Loaded after page-level legacy styles. Keeps all IDs/JavaScript intact while enforcing Frontend V2. */
+
+/* Detail page */
+.restaurant-detail-page .restaurant-banner {
+  height: min(520px, 58vw) !important;
+  min-height: 330px;
+  margin-top: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.restaurant-detail-page .restaurant-banner img { opacity: 1 !important; }
+.restaurant-detail-page .restaurant-banner .banner-overlay {
+  left: 50% !important; right: auto !important; bottom: 42px !important;
+  width: min(1200px, calc(100% - 40px));
+  transform: translateX(-50%);
+  padding: 0 !important;
+  background: transparent !important;
+}
+.restaurant-detail-page .detail-layout { grid-template-columns: 340px 1fr !important; gap: 30px !important; padding: 38px 0 80px !important; }
+.restaurant-detail-page .info-card { top: 96px !important; padding: 24px !important; border-radius: 22px !important; }
+.restaurant-detail-page .info-card p { margin-bottom: 0 !important; padding: 9px 0 !important; font-size: .84rem !important; }
+.restaurant-detail-page .action-btns { flex-direction: row !important; }
+.restaurant-detail-page .menu-item { display: grid !important; grid-template-columns: 82px 1fr auto !important; gap: 15px !important; padding: 13px !important; margin-bottom: 11px !important; border-radius: 17px !important; }
+.restaurant-detail-page .menu-item img { width: 82px !important; height: 72px !important; border-radius: 12px !important; }
+.restaurant-detail-page .detail-menu h2,
+.restaurant-detail-page .review-section h2,
+.restaurant-detail-page .map-section h2 { border-bottom: 0 !important; padding-bottom: 0 !important; color: var(--color-ink) !important; }
+
+/* Admin */
+.admin-page .admin-layout { grid-template-columns: 260px 1fr !important; gap: 24px !important; min-height: auto !important; padding: 0 !important; }
+.admin-page .admin-sidebar { top: 96px !important; padding: 16px !important; border-radius: 20px !important; }
+.admin-page .admin-sidebar h3 { color: var(--color-primary-dark) !important; border-color: var(--color-border) !important; }
+.admin-page .admin-sidebar .nav-item { margin-bottom: 5px !important; padding: 11px 13px !important; }
+.admin-page .admin-content { padding: 30px !important; }
+.admin-page .admin-content h2 { color: var(--color-ink) !important; border-color: var(--color-primary-light) !important; }
+.admin-page .stat-card { border-radius: 18px !important; }
+.admin-page .stat-value { font-family: var(--font-display); }
+.admin-page .sub-item,
+.admin-page .user-row { border-radius: 16px !important; padding: 17px !important; }
+.admin-page .modal-card { border-radius: 22px !important; }
+
+/* Owner portal */
+.owner-dashboard-page .owner-page { max-width: 1280px !important; }
+.owner-dashboard-page .owner-header h1 { color: var(--color-ink) !important; }
+.owner-dashboard-page .owner-layout { grid-template-columns: 270px 1fr !important; gap: 24px !important; }
+.owner-dashboard-page .owner-card { border-radius: 22px !important; }
+.owner-dashboard-page .owner-tab { color: var(--color-text) !important; }
+.owner-dashboard-page .owner-tab.active { color: #fff !important; }
+.owner-dashboard-page .summary-card { border-radius: 18px !important; }
+.owner-dashboard-page .summary-value { font-family: var(--font-display); }
+.owner-dashboard-page .tab-panel h3 { font-family: var(--font-display); color: var(--color-ink); }
+.owner-dashboard-page .restaurant-row,
+.owner-dashboard-page .menu-row,
+.owner-dashboard-page .review-row,
+.owner-dashboard-page .category-row,
+.owner-dashboard-page .hours-row { border-radius: 14px !important; }
+
+/* Profile / submission */
+.profile-page .profile-layout { max-width: 1050px; margin-inline: auto; }
+.profile-page .profile-layout > * { padding: 26px; }
+.submit-page .submit-layout { padding: 0 0 70px !important; }
+.submit-page .submit-card { border-radius: 24px !important; }
+.submit-page #map-pin { border-radius: 18px !important; overflow: hidden; }
+
+@media (max-width: 860px) {
+  .restaurant-detail-page .detail-layout,
+  .admin-page .admin-layout,
+  .owner-dashboard-page .owner-layout { grid-template-columns: 1fr !important; }
+  .restaurant-detail-page .restaurant-banner { height: 390px !important; }
+  .restaurant-detail-page .restaurant-banner .banner-overlay { bottom: 25px !important; }
+  .admin-page .admin-sidebar { position: static !important; }
+}
+
+@media (max-width: 620px) {
+  .restaurant-detail-page .menu-item { grid-template-columns: 68px 1fr !important; }
+  .restaurant-detail-page .menu-item img { width: 68px !important; height: 64px !important; }
+  .restaurant-detail-page .menu-item__price { grid-column: 2; }
+  .admin-page .admin-content { padding: 18px !important; }
+}

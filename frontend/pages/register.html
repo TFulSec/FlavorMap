@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .text-center { text-align: center; margin-top: 1.5rem; font-size: var(--font-size-sm); color: var(--color-text-light); font-weight: 550; }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="auth-container">
+      <div class="auth-header">
+        <h2>Tạo tài khoản mới</h2>
+        <p>Bắt đầu hành trình chia sẻ ẩm thực Việt Nam</p>
+      </div>
+      <form id="registerForm">
+        <div class="form-group">
+          <label class="form-label" for="fullName">Họ và tên</label>
+          <input type="text" id="fullName" class="form-input" required minlength="2">
+          <span class="field-error" id="err-fullName"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="form-input" required>
+          <span class="field-error" id="err-email"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu</label>
+          <div class="input-wrap">
+            <input type="password" id="password" class="form-input" style="width: 100%;" required minlength="8">
+            <button type="button" class="toggle-pw" onclick="togglePw('password')">👁️</button>
+          </div>
+          <span class="field-error" id="err-password"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Xác nhận mật khẩu</label>
+          <div class="input-wrap">
+            <input type="password" id="confirmPassword" class="form-input" style="width: 100%;" required>
+            <button type="button" class="toggle-pw" onclick="togglePw('confirmPassword')">👁️</button>
+          </div>
+          <span class="field-error" id="err-confirmPassword"></span>
+        </div>
+        <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Đăng ký</button>
+        <p class="text-center">
+          Đã có tài khoản? <a href="/pages/login.html" style="color: var(--color-primary); font-weight:600;">Đăng nhập</a>
+        </p>
+      </form>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (auth.isLoggedIn()) {
+          window.location.href = '/pages/index.html';
+        }
+        navbar.render();
+      });
+
+      function togglePw(id) {
+        const el = document.getElementById(id);
+        el.type = el.type === 'password' ? 'text' : 'password';
+      }
+
+      document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+        if(password !== confirmPassword) {
+            document.getElementById('err-confirmPassword').textContent = 'Xác nhận mật khẩu không khớp.';
+            return;
+        }
+
+        try {
+          const res = await api.post('/auth/register', { fullName, email, password, confirmPassword });
+          toast.success(res.message);
+          setTimeout(() => window.location.href = '/pages/login.html', 1500);
+        } catch (err) {
+          toast.error(err.message);
+        }
+      });
+    </script>
+</body>
+</html>

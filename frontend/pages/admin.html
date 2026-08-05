@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị hệ thống - Thổ Địa Ẩm Thực</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+<style>
+      .admin-layout { margin: var(--space-12) auto; display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8); min-height: 85vh; padding: 0 var(--space-4); }
+      
+      /* Sidebar */
+      .admin-sidebar { background: var(--color-bg-soft); padding: var(--space-6); border-radius: var(--radius-xl); border: 1px solid rgba(255, 90, 31, 0.08); box-shadow: var(--shadow-md); align-self: flex-start; position: sticky; top: 100px; }
+      .admin-sidebar h3 { font-family: var(--font-display); font-size: var(--font-size-sm); font-weight: 800; margin-bottom: var(--space-6); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-light); border-bottom: 1px solid var(--color-border); padding-bottom: 12px; }
+      .admin-sidebar .nav-item { display: flex; align-items: center; gap: var(--space-3); padding: 0.85rem 1.15rem; border-radius: var(--radius-xl); cursor: pointer; color: var(--color-text); font-weight: 700; transition: all var(--transition); margin-bottom: var(--space-3); font-size: var(--font-size-sm); border: 1px solid transparent; }
+      .admin-sidebar .nav-item:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: rgba(255, 90, 31, 0.15); }
+      .admin-sidebar .nav-item.active { background: var(--color-primary); color: #fff; box-shadow: 0 10px 15px -3px rgba(255, 90, 31, 0.25); border-color: var(--color-primary); }
+      
+      /* Content wrap */
+      .admin-content { background: var(--color-bg-soft); padding: var(--space-10); border-radius: var(--radius-2xl); border: 1px solid rgba(255, 90, 31, 0.08); box-shadow: var(--shadow-md); }
+      .admin-content h2 { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; color: var(--color-secondary); margin-bottom: var(--space-8); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 14px; position: relative; }
+      
+      /* Stats Board */
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-10); }
+      .stat-card { background: var(--color-bg); padding: var(--space-6); border-radius: var(--radius-xl); border: 1px solid rgba(255, 90, 31, 0.06); display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); transition: transform var(--transition); }
+      .stat-card:hover { transform: translateY(-3px); }
+      .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+      .stat-value { font-size: calc(var(--font-size-3xl) - 0.25rem); font-weight: 850; color: var(--color-primary); line-height: 1.2; }
+ 
+      /* Control Bar */
+      .control-bar { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8); align-items: center; justify-content: space-between; background: var(--color-bg); padding: var(--space-4); border-radius: var(--radius-xl); border: 1.5px solid var(--color-border); }
+      .search-box-admin { position: relative; flex: 1; min-width: 200px; max-width: 400px; }
+      .search-box-admin input { width: 100%; padding: 0.75rem 1rem; padding-left: 42px; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-family: var(--font-family); outline: none; transition: all var(--transition); font-weight: 550; color: var(--color-secondary); }
+      .search-box-admin input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.12); }
+      .search-box-admin::before { content: "🔍"; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; }
+
+      /* Items lists styling */
+      .items-list { display: flex; flex-direction: column; gap: var(--space-4); }
+      .sub-item, .user-row { background: var(--color-bg-soft); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; gap: var(--space-6); align-items: center; justify-content: space-between; transition: all var(--transition); box-shadow: var(--shadow-sm); }
+      .sub-item:hover, .user-row:hover { box-shadow: var(--shadow-md); border-color: rgba(226, 232, 240, 1); transform: translateY(-2px); }
+      
+      .sub-img-wrap { width: 120px; height: 90px; overflow: hidden; border-radius: var(--radius-lg); flex-shrink: 0; background: var(--color-border); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+      .sub-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+      .item-details { flex-shrink: 1; flex: 1; }
+      .item-details h4 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: var(--color-secondary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .item-details p { margin-bottom: 4px; font-size: var(--font-size-sm); color: var(--color-text-light); font-weight: 450; }
+      .item-meta { display: flex; gap: 14px; font-size: var(--font-size-xs); color: var(--color-text-light); margin-top: 8px; font-weight: 550; }
+      
+      /* Badges */
+      .badge { display: inline-block; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid transparent; }
+      .badge--pending { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+      .badge--approved { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
+      .badge--rejected { background: #FEF2F2; color: #DC2626; border-color: #FCA5A5; }
+      .badge--admin { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+      .badge--manager { background: #EEF2FF; color: #4F46E5; border-color: #C7D2FE; }
+      .badge--user { background: #F8FAFC; color: #475569; border-color: #E2E8F0; }
+      .badge--banned { background: #FFF5F5; color: #E53E3E; border: 1px dashed #FEB2B2; }
+
+      .action-btns { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+      
+      /* Sections management */
+      .section-view { display: none; }
+      .section-view.active { display: block; animation: fadeIn 0.3s ease-out; }
+
+      /* Modals design */
+      .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); z-index: 1005; justify-content: center; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .modal-card { background: #ffffff; padding: 36px; border-radius: var(--radius-xl); width: 550px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-hover); border: 1px solid rgba(226, 232, 240,0.8); animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+      .modal-card h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 850; color: var(--color-secondary); border-bottom: 2px solid var(--color-primary-light); padding-bottom: 12px; margin-bottom: 20px; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+      
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+      @media (max-width: 768px) {
+        .admin-layout { grid-template-columns: 1fr; padding: var(--space-6) var(--space-4); margin: var(--space-6) 0; }
+        .admin-sidebar { width: 100%; position: static; box-shadow: var(--shadow-sm); }
+        .sub-item, .user-row { flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+        .action-btns { width: 100%; justify-content: flex-end; margin-top: var(--space-2); }
+      }
+      .admin-nav-link { display:flex; align-items:center; padding:.85rem 1.15rem; border-radius:var(--radius-xl); color:var(--color-text); text-decoration:none; font-weight:700; margin-bottom:var(--space-3); font-size:var(--font-size-sm); border:1px solid transparent; }
+      .admin-nav-link:hover { background:var(--color-primary-light); color:var(--color-primary); border-color:rgba(255,90,31,.15); }
+      .review-row { align-items:flex-start; }
+      .review-comment-box { margin:8px 0; padding:12px; border-radius:12px; background:#f8fafc; white-space:pre-wrap; }
+      .review-actions { min-width:190px; justify-content:flex-end; }
+      .moderation-reason { color:#b91c1c; font-size:.82rem; margin-top:6px; }
+
+      /* Owner application review embedded inside Admin */
+      .applications-intro { margin-top: -18px; margin-bottom: 18px; }
+      .application-review-toolbar { display:flex; justify-content:flex-end; margin-bottom:18px; }
+      .application-review-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+      .application-review-tab { border:1px solid var(--color-border); background:#fff; padding:9px 13px; border-radius:999px; cursor:pointer; font-weight:800; color:var(--color-secondary); transition:all var(--transition); }
+      .application-review-tab:hover { border-color:var(--color-primary); color:var(--color-primary); }
+      .application-review-tab.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); box-shadow:0 7px 14px rgba(255,90,31,.18); }
+      .application-review-layout { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:20px; align-items:start; }
+      .application-review-list-panel { min-width:0; }
+      .application-review-list { display:flex; flex-direction:column; gap:10px; max-height:68vh; overflow:auto; padding:2px 5px 2px 2px; }
+      .application-review-card { background:#fff; border:1px solid var(--color-border); border-radius:16px; padding:15px; cursor:pointer; transition:all var(--transition); }
+      .application-review-card:hover, .application-review-card.active { border-color:var(--color-primary); box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+      .application-status-pill { display:inline-flex; padding:5px 9px; border-radius:999px; font-size:.75rem; font-weight:800; background:#f1f5f9; }
+      .application-status-Submitted, .application-status-UnderReview { background:#eff6ff; color:#1d4ed8; }
+      .application-status-NeedsChanges { background:#fff7ed; color:#c2410c; }
+      .application-status-Approved { background:#ecfdf5; color:#047857; }
+      .application-status-Rejected { background:#fef2f2; color:#b91c1c; }
+      .application-review-detail { background:#fff; border:1px solid var(--color-border); border-radius:20px; padding:22px; min-height:520px; min-width:0; }
+      .application-review-detail h3 { margin-top:24px; margin-bottom:12px; color:var(--color-secondary); }
+      .application-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      .application-detail-row { background:#f8fafc; border-radius:12px; padding:12px; overflow-wrap:anywhere; }
+      .application-detail-row strong { display:block; font-size:.78rem; color:#64748b; margin-bottom:4px; }
+      .application-evidence-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+      .application-evidence-item { border:1px solid var(--color-border); border-radius:12px; overflow:hidden; background:#f8fafc; }
+      .application-evidence-item img { width:100%; height:120px; object-fit:cover; display:block; }
+      .application-evidence-item span { display:block; padding:8px; font-size:.8rem; font-weight:800; }
+      .application-checklist { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+      .application-check-item { display:flex; gap:9px; align-items:flex-start; border:1px solid var(--color-border); border-radius:12px; padding:11px; cursor:pointer; }
+      .application-check-item input { margin-top:3px; }
+      .application-duplicate-box { border:1px solid #f59e0b; background:#fffbeb; border-radius:14px; padding:14px; }
+      .application-review-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+      .application-note-box { width:100%; min-height:90px; resize:vertical; }
+      .application-history-list { display:flex; flex-direction:column; gap:9px; }
+      .application-history-item { display:grid; grid-template-columns:140px 1fr; gap:12px; border-left:3px solid #cbd5e1; padding:8px 0 8px 14px; }
+      .application-history-item strong { display:block; }
+      .application-history-item small { color:#64748b; }
+      .application-empty-panel { text-align:center; padding:50px 20px; color:#64748b; }
+      .application-empty-panel h3 { margin-top:0; }
+      @media(max-width:1100px){ .application-review-layout{grid-template-columns:1fr}.application-review-list{max-height:360px}.application-evidence-grid{grid-template-columns:1fr 1fr} }
+      @media(max-width:600px){ .application-detail-grid,.application-checklist{grid-template-columns:1fr}.application-evidence-grid{grid-template-columns:1fr}.application-review-detail{padding:16px}.application-history-item{grid-template-columns:1fr}.application-review-toolbar{justify-content:flex-start} }
+
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container admin-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="admin-sidebar" id="adminSidebar">
+        <h3>Quản trị website</h3>
+        <div class="nav-item active" data-target="dashboard-section">Thống kê chung</div>
+        <div class="nav-item" data-target="applications-section">Xét duyệt hồ sơ quán</div>
+        <div class="nav-item" data-target="restaurants-section">Quản lý quán ăn</div>
+        <div class="nav-item" data-target="reviews-section">Quản lý đánh giá</div>
+        <div class="nav-item" data-target="submissions-section">Báo quán chưa có</div>
+        <div class="nav-item" data-target="users-section">Quản lý thành viên</div>
+      </aside>
+
+      <!-- Content sections container -->
+      <section class="admin-content">
+        
+        <!-- DASHBOARD OVERVIEW SECTION -->
+        <div id="dashboard-section" class="section-view active">
+          <h2>Thống kê tổng quan</h2>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Tổng số quán ăn</span>
+              <span class="stat-value" id="stat-total-rest">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label font-bold text-amber-600">Hồ sơ Chủ quán chờ duyệt</span>
+              <span class="stat-value" id="stat-pending-sub" style="color:var(--color-warning);">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Tổng số người dùng</span>
+              <span class="stat-value" id="stat-total-users" style="color:#2563eb;">--</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Nhân sự quản trị</span>
+              <span class="stat-value" id="stat-total-staff" style="color:var(--color-success)">--</span>
+            </div>
+          </div>
+
+          <div style="background:var(--color-bg); padding:24px; border-radius: var(--radius-md); border:1.5px dashed var(--color-border); text-align:center;">
+             <h3 class="font-bold text-slate-800" style="margin-bottom:8px;">Chào mừng quay trở lại, quản trị viên!</h3>
+             <p class="text-sm text-slate-500">Tại bảng điều khiển Thổ Địa Ẩm Thực, bạn xét duyệt hồ sơ Chủ quán theo checklist, kiểm tra các đầu mối quán chưa có, chỉnh sửa dữ liệu đã xác minh, phân công vai trò và khóa tài khoản vi phạm.</p>
+          </div>
+        </div>
+
+
+        <!-- OWNER APPLICATION REVIEW SECTION -->
+        <div id="applications-section" class="section-view">
+          <h2>Xét duyệt hồ sơ Chủ quán</h2>
+          <p class="text-sm text-slate-500 applications-intro">Quán chỉ được công khai sau khi hoàn tất checklist, xác minh bằng chứng và không phát hiện trùng lặp.</p>
+
+          <div class="application-review-toolbar">
+            <div class="application-review-tabs" id="applicationStatusTabs" role="tablist" aria-label="Trạng thái hồ sơ Chủ quán">
+              <button type="button" class="application-review-tab active" data-status="Submitted">Chờ tiếp nhận</button>
+              <button type="button" class="application-review-tab" data-status="UnderReview">Đang kiểm tra</button>
+              <button type="button" class="application-review-tab" data-status="NeedsChanges">Cần bổ sung</button>
+              <button type="button" class="application-review-tab" data-status="Approved">Đã duyệt</button>
+              <button type="button" class="application-review-tab" data-status="Rejected">Đã từ chối</button>
+            </div>
+          </div>
+
+          <div class="application-review-layout">
+            <aside class="application-review-list-panel" aria-label="Danh sách hồ sơ">
+              <div id="applicationReviewList" class="application-review-list"><p>Chọn mục này để tải hồ sơ.</p></div>
+            </aside>
+            <section id="applicationReviewDetail" class="application-review-detail" aria-live="polite">
+              <div class="application-empty-panel">
+                <h3>Chọn một hồ sơ để kiểm tra</h3>
+                <p>Thông tin người đăng, bằng chứng, quán nghi trùng, checklist và lịch sử xử lý sẽ hiển thị tại đây.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+
+                <!-- SUBMISSIONS SECTION -->
+        <div id="submissions-section" class="section-view">
+          <h2>Báo cáo quán chưa có trên hệ thống</h2><p class="text-sm text-slate-500" style="margin-top:-8px;margin-bottom:16px;">Đây chỉ là đầu mối do người dùng cung cấp. Xác nhận đầu mối không tự động tạo hoặc công khai quán; Chủ quán vẫn phải gửi hồ sơ xác minh riêng.</p>
+          
+          <div class="control-bar">
+            <div class="tabs" style="display:flex; gap:12px;">
+              <button class="btn btn--primary" id="btnSubPending" style="border-radius: var(--radius-full);">Mới báo</button>
+              <button class="btn btn--outline" id="btnSubReviewing" style="border-radius: var(--radius-full);">Đang kiểm tra</button>
+              <button class="btn btn--outline" id="btnSubProcessed" style="border-radius: var(--radius-full);">Đã xử lý</button>
+            </div>
+          </div>
+          
+          <div class="items-list" id="submissions-list"></div>
+        </div>
+
+        <!-- ALL RESTAURANTS SECTION -->
+        <div id="restaurants-section" class="section-view">
+          <h2>Quản lý tệp dữ liệu quán ăn</h2>
+          
+          <div class="control-bar">
+            <div class="search-box-admin">
+              <input type="text" id="restaurantSearchInput" placeholder="Tìm kiếm quán ăn...">
+            </div>
+            <button type="button" class="btn btn--primary" id="openApplicationsSection"><span>Xét duyệt hồ sơ Chủ quán</span></button>
+          </div>
+          
+          <div class="items-list" id="restaurants-list"></div>
+        </div>
+
+        <!-- REVIEW MODERATION SECTION -->
+        <div id="reviews-section" class="section-view">
+          <h2>Quản lý đánh giá và báo cáo vi phạm</h2>
+          <p class="text-sm text-slate-500" style="margin-top:-18px;margin-bottom:18px;">Chỉ ẩn nội dung spam, xúc phạm, giả mạo hoặc vi phạm quy định. Không xóa đánh giá chỉ vì người dùng chấm điểm thấp hay phản hồi không tích cực.</p>
+          <div class="control-bar">
+            <div class="search-box-admin"><input type="text" id="reviewSearchInput" placeholder="Tìm nội dung, quán hoặc người đánh giá..."></div>
+            <select id="reviewStatusFilter" class="form-input" style="width:auto;min-width:180px;">
+              <option value="Reported">Đang bị báo cáo</option>
+              <option value="Hidden">Đã ẩn</option>
+              <option value="Visible">Đang hiển thị</option>
+              <option value="All">Tất cả</option>
+            </select>
+          </div>
+          <div class="items-list" id="reviews-admin-list"></div>
+        </div>
+
+        <!-- USERS SECTION -->
+        <div id="users-section" class="section-view">
+          <h2>Quản lý thành viên hệ thống</h2>
+          
+          <div class="control-bar">
+            <div class="search-box-admin">
+              <input type="text" id="userSearchInput" placeholder="Tìm kiếm theo tên hoặc email...">
+            </div>
+            <select id="userRoleFilter" class="form-input" style="padding: 6px 12px; font-size: 14px; width:auto; border-radius: var(--radius-md);">
+              <option value="">Tất cả vai trò</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
+              <option value="Owner">Owner</option>
+              <option value="User">User</option>
+            </select>
+          </div>
+          
+          <div class="items-list" id="users-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL EDIT / CREATE RESTAURANT -->
+    <div id="restaurantFormModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modalTitle">Sửa đổi thông tin quán ăn</h3>
+            <form id="restaurantForm" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <input type="hidden" id="rForm-id">
+                <input type="hidden" id="rForm-action" value="update"> <!-- 'create' or 'update' -->
+                
+                <div class="form-group">
+                    <label class="form-label">Tên quán ăn *</label>
+                    <input type="text" id="rForm-name" class="form-input" required placeholder="Ví dụ: Phở Gia Truyền Bát Đàn">
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Thành phố *</label>
+                        <select id="rForm-city" class="form-input" required>
+                            <option value="Hà Nội">Hà Nội</option>
+                            <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                            <option value="Đà Nẵng">Đà Nẵng</option>
+                            <option value="Hải Phòng">Hải Phòng</option>
+                            <option value="Cần Thơ">Cần Thơ</option>
+                            <option value="Huế">Huế</option>
+                            <option value="Nha Trang">Nha Trang</option>
+                            <option value="Đà Lạt">Đà Lạt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quận / Huyện *</label>
+                        <input type="text" id="rForm-district" class="form-input" required placeholder="Ví dụ: Hoàn Kiếm">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ cụ thể *</label>
+                    <input type="text" id="rForm-address" class="form-input" required placeholder="Ví dụ: 49 Bát Đàn">
+                </div>
+
+                <div class="form-group" id="ownerAssignmentGroup" hidden>
+                    <label class="form-label" for="rForm-owner">Gán Chủ quán</label>
+                    <select id="rForm-owner" class="form-input">
+                      <option value="">Chưa gán Chủ quán</option>
+                    </select>
+                    <small class="text-muted">Chỉ Admin được gán tài khoản có vai trò Owner đang hoạt động. Việc này dùng để sửa dữ liệu lịch sử hoặc khắc phục gán sai.</small>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Danh mục món ăn *</label>
+                        <select id="rForm-category" class="form-input" required>
+                            <option value="Cơm">🍜 Món Việt (bún, phở, cơm...)</option>
+                            <option value="Cafe">☕ Cafe & Trà</option>
+                            <option value="Đồ ăn vặt">🍢 Đồ ăn vặt</option>
+                            <option value="Nước">🥤 Đồ uống</option>
+                            <option value="Hải sản">🦐 Hải sản</option>
+                            <option value="Khác">🍽 Ẩm thực khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hình ảnh banner (URL hoặc Tải Lên) *</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="rForm-bannerurl" class="form-input" required placeholder="URL hoặc chọn tệp tải lên..." style="flex:1;">
+                            <input type="file" id="rForm-bannerfile" accept="image/*" style="display:none;" onchange="uploadRestaurantBanner(event)">
+                            <button type="button" class="btn btn--outline" style="padding:0 12px; font-size:13px; font-weight:600; white-space:nowrap; border-color:var(--color-border);" onclick="document.getElementById('rForm-bannerfile').click()">📁 Chọn tệp</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mô tả giới thiệu nổi bật</label>
+                    <textarea id="rForm-description" class="form-input" style="height: 80px; resize:vertical;" placeholder="Mô tả quán, thực đơn đặc biệt..."></textarea>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Giá tối thiểu (đ) *</label>
+                        <input type="number" id="rForm-pricemin" class="form-input" required min="0" placeholder="Ví dụ: 30000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá tối đa (đ) *</label>
+                        <input type="number" id="rForm-pricemax" class="form-input" required min="0" placeholder="Ví dụ: 80000">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Giờ mở cửa *</label>
+                        <input type="text" id="rForm-opening" class="form-input" required placeholder="Ví dụ: 06:00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giờ đóng cửa *</label>
+                        <input type="text" id="rForm-closing" class="form-input" required placeholder="Ví dụ: 21:30">
+                    </div>
+                </div>
+
+
+                <div style="display:flex; gap: 24px; margin-top: 4px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor:pointer;">
+                      <input type="checkbox" id="rForm-isnew"> Có gắn nhãn MỚI
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor:pointer;">
+                      <input type="checkbox" id="rForm-isfeatured"> Có đặt ở mục NỔI BẬT
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button type="submit" class="btn btn--primary" style="flex: 1; justify-content:center;">Lưu thông tin</button>
+                    <button type="button" class="btn btn--outline" style="flex: 1; justify-content:center;" onclick="closeFormModal()">Hủy bỏ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MANAGE MENU -->
+    <div id="menuManageModal" class="modal-overlay">
+        <div class="modal-card" style="width: 700px;">
+            <h3 id="menuModalTitle">Quản lý thực đơn</h3>
+            <p style="margin-top:-14px; margin-bottom: 20px; font-size:14px; color:var(--color-text-light);">Cập nhật danh sách món ăn, giá tiền, hành động nhanh và ảnh minh họa món từ thiết bị.</p>
+            
+            <div id="menu-loading-msg" style="padding:16px 0; text-align:center;">Đang tải danh sách món ăn...</div>
+            
+            <!-- List of current menu items -->
+            <div id="menu-items-list" style="max-height: 250px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom: 20px; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding:12px; background:var(--color-bg);">
+            </div>
+            
+            <div style="border-top:1.5px dashed var(--color-border); padding-top:16px; margin-top:16px;">
+                <h4 style="font-weight:800; color:var(--color-secondary); margin-bottom:12px;" id="menuItemFormTitle">Thêm món ăn mới</h4>
+                <form id="menuItemForm" style="display:flex; flex-direction:column; gap:12px;" onsubmit="handleMenuItemFormSubmit(event)">
+                    <input type="hidden" id="mForm-id">
+                    <input type="hidden" id="mForm-action" value="create"> <!-- 'create' or 'update' -->
+                    <input type="hidden" id="mForm-restaurantId">
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Tên món *</label>
+                            <input type="text" id="mForm-name" class="form-input" required placeholder="Ví dụ: Phở Đặc Biệt, Trà Sữa Thạch">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Giá tiền (VNĐ) *</label>
+                            <input type="number" id="mForm-price" class="form-input" required placeholder="Ví dụ: 45000">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">Mô tả món ăn</label>
+                        <input type="text" id="mForm-description" class="form-input" placeholder="Ví dụ: Phở nạm, gầu giòn thơm ngon hoặc mô tả thành phần...">
+                    </div>
+                    
+                    <div class="grid-2" style="align-items: center;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:12px;">Đường dẫn ảnh món ăn (URL hoặc Tải Lên)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="mForm-imageurl" class="form-input" placeholder="URL hoặc chọn tệp để tải ảnh lên">
+                                <input type="file" id="mForm-imagefile" accept="image/*" style="display:none;" onchange="uploadMenuItemPhoto(event)">
+                                <button type="button" class="btn btn--outline" style="padding:0 10px; font-size:12px; font-weight:600; white-space:nowrap; border-color:var(--color-border);" onclick="document.getElementById('mForm-imagefile').click()">📁 Chọn tệp</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor:pointer; font-size:13px; color:var(--color-secondary);">
+                                <input type="checkbox" id="mForm-isavailable" checked style="width:16px; height:16px; accent-color:var(--color-primary);"> Còn hàng / Sẵn sàng phục vụ
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px;">
+                        <button type="submit" class="btn btn--primary" id="btnSaveMenuItem" style="padding:8px 18px; font-size:13px;">Lưu món ăn</button>
+                        <button type="button" class="btn btn--outline" id="btnResetMenuItem" style="padding:8px 18px; font-size:13px; border-color:var(--color-border);" onclick="resetMenuItemForm()">Hủy bỏ / Tạo mới</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div style="text-align:right; margin-top:24px; border-top: 1.5px solid var(--color-border); padding-top:16px;">
+                <button type="button" class="btn btn--outline" onclick="closeMenuManageModal()" style="font-size:14px; font-weight:700; border-color:var(--color-border); padding:8px 20px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+<script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script src="/assets/js/feature-helpers.js"></script>
+    <script src="/assets/js/admin-applications-section.js"></script>
+<script>
+      let currentSubFilter = 'Submitted';
+      let allRestaurants = [];
+      let allUsers = [];
+      let adminReviews = [];
+      let reviewSearchTimer = null;
+
+      document.addEventListener('DOMContentLoaded', async () => {
+         auth.requireLogin();
+         const user = auth.getUser();
+         if (!user || (user.role !== 'Admin' && user.role !== 'Manager')) {
+             toast.error('Có lỗi xảy ra: Bạn không được cấp quyền truy cập bảng quản lý.');
+             window.location.href = '/pages/index.html';
+             return;
+         }
+
+         navbar.render();
+         setupSidebarNavigation();
+         setupEvents();
+         
+         // Initial load
+         await computeStats();
+
+         // Giữ tương thích với đường dẫn cũ và mở đúng mục bên trong Quản trị hệ thống.
+         if (window.location.hash === '#applications-section') {
+             document.querySelector('#adminSidebar [data-target="applications-section"]')?.click();
+         }
+      });
+
+      // Basic stats loading via api
+      async function computeStats() {
+          try {
+              const resR = await api.get('/admin/restaurants');
+              const resU = await api.get('/admin/users');
+              const resS = await api.get('/admin/restaurant-applications?status=Submitted');
+              
+              const totalRest = resR.data ? resR.data.length : 0;
+              allUsers = resU.data || [];
+              const totalUsers = allUsers.length;
+              const pendingSub = resS.data ? resS.data.length : 0;
+              const totalStaff = resU.data ? resU.data.filter(u => u.Role === 'Admin' || u.Role === 'Manager').length : 0;
+
+              document.getElementById('stat-total-rest').textContent = totalRest;
+              document.getElementById('stat-pending-sub').textContent = pendingSub;
+              document.getElementById('stat-total-users').textContent = totalUsers;
+              document.getElementById('stat-total-staff').textContent = totalStaff;
+          } catch(err) {
+              console.error('Failed to calculate directory metrics', err);
+          }
+      }
+
+      function setupSidebarNavigation() {
+          document.querySelectorAll('#adminSidebar .nav-item').forEach(item => {
+              item.addEventListener('click', (e) => {
+                  document.querySelectorAll('#adminSidebar .nav-item').forEach(nav => nav.classList.remove('active'));
+                  e.currentTarget.classList.add('active');
+                  
+                  const targetId = e.currentTarget.getAttribute('data-target');
+                  document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+                  document.getElementById(targetId).classList.add('active');
+
+                  if (targetId !== 'applications-section' && window.location.hash === '#applications-section') {
+                      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                  }
+
+                  if (targetId === 'dashboard-section') {
+                      computeStats();
+                  } else if (targetId === 'applications-section') {
+                      window.adminApplications?.load();
+                      window.history.replaceState(null, '', '#applications-section');
+                  } else if(targetId === 'users-section') {
+                      loadUsers();
+                  } else if (targetId === 'restaurants-section') {
+                      loadAllRestaurants();
+                  } else if (targetId === 'submissions-section') {
+                      loadSubmissions();
+                  } else if (targetId === 'reviews-section') {
+                      loadAdminReviews();
+                  }
+              });
+          });
+      }
+
+      function setupEvents() {
+          document.getElementById('openApplicationsSection')?.addEventListener('click', () => {
+              document.querySelector('#adminSidebar [data-target="applications-section"]')?.click();
+              document.getElementById('applications-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+
+          // Submissions subfilters
+          document.getElementById('btnSubPending').addEventListener('click', () => {
+              currentSubFilter = 'Submitted';
+              document.getElementById('btnSubPending').className = 'btn btn--primary';
+              document.getElementById('btnSubProcessed').className = 'btn btn--outline';
+              document.getElementById('btnSubReviewing').className = 'btn btn--outline';
+              loadSubmissions();
+          });
+          document.getElementById('btnSubReviewing').addEventListener('click', () => {
+              currentSubFilter = 'UnderReview';
+              document.getElementById('btnSubReviewing').className = 'btn btn--primary';
+              document.getElementById('btnSubPending').className = 'btn btn--outline';
+              document.getElementById('btnSubProcessed').className = 'btn btn--outline';
+              loadSubmissions();
+          });
+
+          document.getElementById('btnSubProcessed').addEventListener('click', () => {
+              currentSubFilter = 'Processed';
+              document.getElementById('btnSubProcessed').className = 'btn btn--primary';
+              document.getElementById('btnSubPending').className = 'btn btn--outline';
+              document.getElementById('btnSubReviewing').className = 'btn btn--outline';
+              loadSubmissions();
+          });
+
+          // Live Search restaurants
+          document.getElementById('restaurantSearchInput').addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase().trim();
+              filterRestaurantsInView(query);
+          });
+
+          // Live Search users
+          document.getElementById('userSearchInput').addEventListener('input', () => filterUsersInView());
+          document.getElementById('userRoleFilter').addEventListener('change', () => filterUsersInView());
+
+          document.getElementById('reviewStatusFilter').addEventListener('change', loadAdminReviews);
+          document.getElementById('reviewSearchInput').addEventListener('input', () => {
+              clearTimeout(reviewSearchTimer);
+              reviewSearchTimer = setTimeout(loadAdminReviews, 350);
+          });
+
+          // Form integration submit
+          document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const action = document.getElementById('rForm-action').value;
+              const id = document.getElementById('rForm-id').value;
+              
+              const payload = {
+                  Name: document.getElementById('rForm-name').value.trim(),
+                  City: document.getElementById('rForm-city').value,
+                  District: document.getElementById('rForm-district').value.trim(),
+                  Address: document.getElementById('rForm-address').value.trim(),
+                  Category: document.getElementById('rForm-category').value,
+                  BannerUrl: document.getElementById('rForm-bannerurl').value.trim(),
+                  Description: document.getElementById('rForm-description').value.trim(),
+                  PriceMin: parseInt(document.getElementById('rForm-pricemin').value) || 0,
+                  PriceMax: parseInt(document.getElementById('rForm-pricemax').value) || 0,
+                  OpeningTime: document.getElementById('rForm-opening').value.trim(),
+                  ClosingTime: document.getElementById('rForm-closing').value.trim(),
+                  IsNew: document.getElementById('rForm-isnew').checked,
+                  IsFeatured: document.getElementById('rForm-isfeatured').checked,
+              };
+              try {
+                  if (action === 'create') {
+                      throw new Error('Quán mới phải được Chủ quán gửi hồ sơ xác minh; Admin không tạo quán công khai trực tiếp.');
+                  }
+                  await api.put(`/admin/restaurants/${id}`, payload);
+                  if (auth.getUser()?.role === 'Admin') {
+                      const selectedOwner = document.getElementById('rForm-owner').value || null;
+                      const currentRestaurant = allRestaurants.find((item) => String(item.Id) === String(id));
+                      const currentOwner = currentRestaurant?.OwnerUserId || null;
+                      if (String(selectedOwner || '') !== String(currentOwner || '')) {
+                          await api.put(`/admin/restaurants/${id}/owner`, { ownerUserId: selectedOwner });
+                      }
+                  }
+                  toast.success('Đã cập nhật thông tin quán và quyền Chủ quán.');
+                  closeFormModal();
+                  loadAllRestaurants();
+                  computeStats();
+              } catch(err) {
+                  toast.error('Lỗi khi lưu quán ăn: ' + err.message);
+              }
+          });
+      }
+
+      // MISSING RESTAURANT LEADS: internal leads only, never publish restaurants.
+      const leadStatusLabels = {
+          Submitted: 'Mới báo', UnderReview: 'Đang kiểm tra', Approved: 'Đã xác nhận đầu mối', Rejected: 'Không hợp lệ'
+      };
+
+      async function loadSubmissions() {
+          const list = document.getElementById('submissions-list');
+          list.innerHTML = '<p>Đang tải các đầu mối quán chưa có...</p>';
+          try {
+              const res = await api.get(`/admin/submissions?status=${encodeURIComponent(currentSubFilter)}`);
+              const data = res.data;
+              if(!data || data.length === 0) {
+                  list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Không có đầu mối nào trong trạng thái này.</p>';
+                  return;
+              }
+
+              list.innerHTML = data.map(item => {
+                  const status = item.Status || 'Submitted';
+                  const canReview = status === 'Submitted';
+                  const canFinish = ['Submitted', 'UnderReview'].includes(status);
+                  return `
+                  <div class="sub-item animate-fade">
+                     <div class="sub-img-wrap">
+                        <img src="${utils.escapeHtml(item.ImageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80')}" alt="Ảnh quán được báo" onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'">
+                     </div>
+                     <div class="item-details">
+                        <h4>
+                           ${utils.escapeHtml(item.Name || '')}
+                           <span class="badge badge--${utils.escapeHtml(status.toLowerCase())}">${utils.escapeHtml(leadStatusLabels[status] || status)}</span>
+                        </h4>
+                        <p><strong>Địa chỉ được báo:</strong> ${utils.escapeHtml(item.Address || '')}${item.District ? ', ' + utils.escapeHtml(item.District) : ''}, ${utils.escapeHtml(item.City || 'Chưa rõ')}</p>
+                        <p><strong>Loại món:</strong> ${utils.escapeHtml(utils.categoryLabel(item.Category || 'Khác'))}</p>
+                        ${item.Description ? `<p><strong>Mô tả:</strong> ${utils.escapeHtml(item.Description)}</p>` : ''}
+                        <div class="item-meta">
+                          <span>Khoảng giá: ${utils.formatPrice(item.SuggestedPriceMin || 0)} - ${utils.formatPrice(item.SuggestedPriceMax || 0)}</span>
+                          <span>Tọa độ: (${utils.escapeHtml(String(item.Latitude ?? 'N/A'))}, ${utils.escapeHtml(String(item.Longitude ?? 'N/A'))})</span>
+                        </div>
+                        ${item.AdminNote ? `<p><strong>Ghi chú xử lý:</strong> ${utils.escapeHtml(item.AdminNote)}</p>` : ''}
+                        ${item.RejectionReason ? `<p style="color:#b91c1c"><strong>Lý do không hợp lệ:</strong> ${utils.escapeHtml(item.RejectionReason)}</p>` : ''}
+                        <p class="text-sm text-slate-500"><strong>Lưu ý:</strong> Xác nhận đầu mối không tạo quán. Cần liên hệ Chủ quán và hướng dẫn họ gửi hồ sơ xác minh.</p>
+                     </div>
+                     ${canFinish ? `
+                         <div class="action-btns">
+                            ${canReview ? `<button class="btn btn--outline" style="padding:4px 12px;font-size:13px" onclick="updateSubStatus('${item.Id}', 'UnderReview')">Bắt đầu kiểm tra</button>` : ''}
+                            <button class="btn btn--primary" style="padding:4px 12px;font-size:13px" onclick="updateSubStatus('${item.Id}', 'Approved')">Xác nhận đầu mối</button>
+                            <button class="btn btn--outline" style="padding:4px 12px;font-size:13px;color:red;border-color:#fee2e2" onclick="updateSubStatus('${item.Id}', 'Rejected')">Không hợp lệ</button>
+                         </div>
+                     ` : ''}
+                  </div>`;
+              }).join('');
+          } catch(err) {
+              list.innerHTML = `<p style="color:red">Có lỗi xảy ra: ${utils.escapeHtml(err.message)}</p>`;
+          }
+      }
+
+      async function updateSubStatus(id, status) {
+          let note = '';
+          if (status === 'Rejected') {
+              note = prompt('Nhập lý do thông tin này không hợp lệ:') || '';
+              if (!note.trim()) return;
+          } else if (status === 'Approved') {
+              note = prompt('Ghi chú cách liên hệ/hướng dẫn Chủ quán (không bắt buộc):') || '';
+              if (!confirm('Xác nhận đây là một đầu mối hợp lệ? Thao tác này KHÔNG tạo hoặc công khai quán.')) return;
+          } else if (!confirm('Bắt đầu kiểm tra thông tin quán chưa có này?')) return;
+          try {
+              await api.put(`/admin/submissions/${id}/status`, { status, note });
+              toast.success(status === 'Approved' ? 'Đã xác nhận đầu mối; quán chưa được công khai.' : status === 'Rejected' ? 'Đã lưu lý do không hợp lệ.' : 'Đã bắt đầu kiểm tra.');
+              loadSubmissions();
+              computeStats();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      // RESTAURANTS
+      async function loadAllRestaurants() {
+          const list = document.getElementById('restaurants-list');
+          list.innerHTML = '<p>Đang tải danh mục quán...</p>';
+          try {
+              const res = await api.get('/admin/restaurants');
+              allRestaurants = res.data || [];
+              renderRestaurantsList(allRestaurants);
+          } catch(err) {
+              list.innerHTML = `<p style="color:red">Lỗi tải dữ liệu: ${err.message}</p>`;
+          }
+      }
+
+      function renderRestaurantsList(data) {
+          const list = document.getElementById('restaurants-list');
+          if(!data || data.length === 0) {
+              list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Thư mục quán rỗng hoặc từ khóa lọc không khớp.</p>';
+              return;
+          }
+
+          list.innerHTML = data.map(item => `
+              <div class="sub-item" data-rest-name="${item.Name.toLowerCase()}" data-rest-address="${item.Address.toLowerCase()}">
+                 <div class="sub-img-wrap">
+                    <img src="${item.BannerUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'}" onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'">
+                 </div>
+                 <div class="item-details">
+                    <h4>
+                        ${item.Name}
+                        ${item.IsFeatured ? '<span class="badge badge--approved">Nổi Bật</span>' : ''}
+                        ${item.IsNew ? '<span class="badge badge--pending">Mới</span>' : ''}
+                        <span class="badge ${item.PublicationStatus==='Published'?'badge--approved':'badge--pending'}">${utils.escapeHtml(item.PublicationStatus||'Published')}</span>
+                        <span class="badge ${item.VerificationStatus==='Verified'?'badge--approved':'badge--pending'}">${utils.escapeHtml(item.VerificationStatus||'Verified')}</span>
+                    </h4>
+                    <p><strong>Vị trí:</strong> ${item.Address}${item.District ? ', ' + item.District : ''}, ${item.City}</p>
+                    <p><strong>Nhóm ẩm thực:</strong> ${utils.escapeHtml(utils.categoryLabel(item.Category))}</p>
+                    <p><strong>Mở cửa:</strong> ${item.OpeningTime || '08:00'} - ${item.ClosingTime || '22:00'} | <strong>Đánh giá:</strong> ⭐ ${item.Rating || '0.0'}</p>
+                    <p><strong>Chủ quán:</strong> ${item.OwnerName ? `${item.OwnerName} (${item.OwnerEmail || ''})` : 'Chưa gán'}</p>
+                 </div>
+                 <div class="action-btns">
+                    <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:var(--color-secondary); border-color:var(--color-border);" onclick="openMenuModal('${item.Id}', \`${item.Name.replace(/'/g, "\\'")}\`)">Thực đơn</button>
+                    <button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:var(--color-primary); border-color:var(--color-border);" onclick="openEditModal('${item.Id}')">Sửa</button>
+                    ${auth.getUser()?.role === 'Admin' ? `${item.PublicationStatus==='Published'
+                      ? `<button class="btn btn--outline" style="padding:4px 12px;font-size:13px" onclick="setPublicationStatus('${item.Id}','Hidden')">Ẩn</button><button class="btn btn--outline" style="padding:4px 12px;font-size:13px;color:#b91c1c" onclick="setPublicationStatus('${item.Id}','Suspended')">Đình chỉ</button>`
+                      : (item.VerificationStatus==='Verified'?`<button class="btn btn--outline" style="padding:4px 12px;font-size:13px;color:#047857" onclick="setPublicationStatus('${item.Id}','Published')">Xuất bản</button>`:'')}
+                      ` : ''}
+                 </div>
+              </div>
+          `).join('');
+      }
+
+      function filterRestaurantsInView(query) {
+          if (!query) {
+              renderRestaurantsList(allRestaurants);
+              return;
+          }
+          const filtered = allRestaurants.filter(r => 
+              r.Name.toLowerCase().includes(query) || 
+              r.Address.toLowerCase().includes(query) || 
+              (r.District && r.District.toLowerCase().includes(query)) ||
+              r.City.toLowerCase().includes(query) ||
+              r.Category.toLowerCase().includes(query)
+          );
+          renderRestaurantsList(filtered);
+      }
+
+      // CREATE / EDIT RESTAURANTS MODALS
+      function openCreateModal() {
+          document.getElementById('modalTitle').textContent = 'Thêm quán ăn mới hoàn toàn';
+          document.getElementById('restaurantForm').reset();
+          document.getElementById('rForm-action').value = 'create';
+          document.getElementById('rForm-id').value = '';
+          
+          document.getElementById('rForm-name').value = '';
+          document.getElementById('rForm-city').value = 'Hà Nội';
+          document.getElementById('rForm-district').value = '';
+          document.getElementById('rForm-address').value = '';
+          document.getElementById('rForm-category').value = 'Cơm';
+          document.getElementById('rForm-bannerurl').value = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80';
+          document.getElementById('rForm-description').value = '';
+          document.getElementById('rForm-pricemin').value = '30000';
+          document.getElementById('rForm-pricemax').value = '80000';
+          document.getElementById('rForm-opening').value = '08:00';
+          document.getElementById('rForm-closing').value = '22:00';
+          document.getElementById('rForm-isnew').checked = true;
+          document.getElementById('rForm-isfeatured').checked = false;
+
+          document.getElementById('restaurantFormModal').style.display = 'flex';
+      }
+
+      function openEditModal(id) {
+          const rest = allRestaurants.find(r => r.Id === id);
+          if(!rest) return;
+          
+          document.getElementById('modalTitle').textContent = 'Sửa đổi thông tin quán ăn';
+          document.getElementById('rForm-action').value = 'update';
+          document.getElementById('rForm-id').value = rest.Id;
+          
+          document.getElementById('rForm-name').value = rest.Name || '';
+          document.getElementById('rForm-city').value = rest.City || 'Hà Nội';
+          document.getElementById('rForm-district').value = rest.District || '';
+          document.getElementById('rForm-address').value = rest.Address || '';
+          document.getElementById('rForm-category').value = rest.Category || 'Khác';
+          document.getElementById('rForm-bannerurl').value = rest.BannerUrl || '';
+          document.getElementById('rForm-description').value = rest.Description || '';
+          document.getElementById('rForm-pricemin').value = rest.PriceMin ?? '0';
+          document.getElementById('rForm-pricemax').value = rest.PriceMax ?? '0';
+          document.getElementById('rForm-opening').value = rest.OpeningTime || '08:00';
+          document.getElementById('rForm-closing').value = rest.ClosingTime || '22:00';
+          document.getElementById('rForm-isnew').checked = rest.IsNew || false;
+          document.getElementById('rForm-isfeatured').checked = rest.IsFeatured || false;
+          populateOwnerSelect(rest.OwnerUserId || '');
+
+          document.getElementById('restaurantFormModal').style.display = 'flex';
+      }
+
+      function populateOwnerSelect(selectedOwnerId = '') {
+          const group = document.getElementById('ownerAssignmentGroup');
+          const select = document.getElementById('rForm-owner');
+          const isAdmin = auth.getUser()?.role === 'Admin';
+          group.hidden = !isAdmin;
+          if (!isAdmin) return;
+          const owners = allUsers.filter((user) => user.Role === 'Owner' && !user.IsBanned);
+          select.innerHTML = '<option value="">Chưa gán Chủ quán</option>' + owners.map((owner) =>
+            `<option value="${utils.escapeHtml(owner.Id)}">${utils.escapeHtml(owner.FullName)} — ${utils.escapeHtml(owner.Email)}</option>`
+          ).join('');
+          select.value = selectedOwnerId || '';
+      }
+
+      function closeFormModal() {
+          document.getElementById('restaurantFormModal').style.display = 'none';
+      }
+
+      async function setPublicationStatus(id,status) {
+          let note = '';
+          if (status !== 'Published') {
+              note = prompt(status === 'Suspended' ? 'Nhập lý do đình chỉ quán:' : 'Nhập lý do ẩn quán:') || '';
+              if (!note.trim()) return;
+          } else if (!confirm('Xuất bản lại quán đã được xác minh?')) return;
+          try {
+              await api.put(`/admin/restaurants/${id}/publication-status`, { publicationStatus: status, note });
+              toast.success('Đã cập nhật trạng thái công khai.');
+              await loadAllRestaurants();
+          } catch (error) { toast.error(error.message); }
+      }
+
+
+      // REVIEW MODERATION
+      async function loadAdminReviews() {
+          const list = document.getElementById('reviews-admin-list');
+          if (!list) return;
+          list.innerHTML = '<p>Đang tải danh sách đánh giá...</p>';
+          const status = document.getElementById('reviewStatusFilter').value;
+          const q = document.getElementById('reviewSearchInput').value.trim();
+          try {
+              const params = new URLSearchParams({ status });
+              if (q) params.set('q', q);
+              const res = await api.get(`/admin/reviews?${params}`);
+              adminReviews = res.data || [];
+              renderAdminReviews(adminReviews);
+          } catch (error) {
+              list.innerHTML = `<p style="color:red">${utils.escapeHtml(error.message)}</p>`;
+          }
+      }
+
+      function renderAdminReviews(rows) {
+          const list = document.getElementById('reviews-admin-list');
+          if (!rows.length) {
+              list.innerHTML = '<p style="padding:16px;color:var(--color-text-light);">Không có đánh giá phù hợp bộ lọc.</p>';
+              return;
+          }
+          const isAdmin = auth.getUser()?.role === 'Admin';
+          list.innerHTML = rows.map((item) => `
+            <article class="user-row review-row">
+              <div class="item-details">
+                <h4>${utils.escapeHtml(item.RestaurantName || 'Quán ăn')} <span class="badge ${item.IsHidden ? 'badge--rejected' : 'badge--approved'}">${item.IsHidden ? 'Đã ẩn' : 'Đang hiển thị'}</span></h4>
+                <p><strong>Người đánh giá:</strong> ${utils.escapeHtml(item.AuthorName || '')} (${utils.escapeHtml(item.AuthorEmail || '')}) · <strong>${Number(item.Rating || 0)}/5 sao</strong></p>
+                <div class="review-comment-box">${utils.escapeHtml(item.Comment || '(Không có bình luận)')}</div>
+                <div class="review-admin-meta">
+                  <span class="badge badge--pending">${Number(item.PendingReportCount || 0)} báo cáo đang chờ</span>
+                  ${item.LatestReportReason ? `<span class="badge badge--user">${utils.escapeHtml(item.LatestReportReason)}</span>` : ''}
+                </div>
+                ${item.LatestReportDetails ? `<p><strong>Nội dung báo cáo gần nhất:</strong> ${utils.escapeHtml(item.LatestReportDetails)}</p>` : ''}
+                ${item.ModerationReason ? `<p class="moderation-reason"><strong>Lý do kiểm duyệt:</strong> ${utils.escapeHtml(item.ModerationReason)}</p>` : ''}
+              </div>
+              <div class="action-btns review-actions">
+                <a class="btn btn--outline" href="/pages/restaurant.html?slug=${encodeURIComponent(item.RestaurantSlug || '')}" target="_blank">Xem quán</a>
+                ${isAdmin && !item.IsHidden ? `<button class="btn btn--outline" style="color:#b91c1c" onclick="moderateReview('${item.Id}','Hide')">Ẩn vi phạm</button>` : ''}
+                ${isAdmin && item.IsHidden ? `<button class="btn btn--outline" style="color:#047857" onclick="moderateReview('${item.Id}','Restore')">Khôi phục</button>` : ''}
+                ${isAdmin && Number(item.PendingReportCount || 0) > 0 ? `<button class="btn btn--outline" onclick="moderateReview('${item.Id}','DismissReports')">Bác báo cáo</button>` : ''}
+              </div>
+            </article>`).join('');
+      }
+
+      async function moderateReview(id, action) {
+          let reason = '';
+          if (action === 'Hide') {
+              reason = prompt('Nhập lý do vi phạm (spam, xúc phạm, giả mạo, thông tin sai...):') || '';
+              if (!reason.trim()) return;
+              if (!confirm('Ẩn đánh giá vi phạm này? Điểm trung bình của quán sẽ được tính lại.')) return;
+          } else if (action === 'Restore') {
+              reason = prompt('Ghi chú khôi phục (không bắt buộc):') || '';
+              if (!confirm('Khôi phục đánh giá này lên trang công khai?')) return;
+          } else if (!confirm('Bác các báo cáo đang chờ và giữ nguyên đánh giá?')) return;
+          try {
+              const res = await api.put(`/admin/reviews/${id}/moderation`, { action, reason });
+              toast.success(res.message || 'Đã xử lý đánh giá.');
+              await loadAdminReviews();
+              await loadAllRestaurants();
+          } catch (error) { toast.error(error.message); }
+      }
+
+      // MEMBERS / USERS
+      async function loadUsers() {
+          const list = document.getElementById('users-list');
+          list.innerHTML = '<p>Đang tải danh sách thành viên...</p>';
+          try {
+              const res = await api.get('/admin/users');
+              allUsers = res.data || [];
+              renderUsersList(allUsers);
+          } catch(err) {
+              list.innerHTML = `<p style="color:red">Lỗi tải dữ liệu: ${err.message}</p>`;
+          }
+      }
+
+      function renderUsersList(data) {
+          const list = document.getElementById('users-list');
+          if(!data || data.length === 0) {
+              list.innerHTML = '<p style="padding:16px; color:var(--color-text-light);">Không tìm thấy người dùng nào khớp điều kiện.</p>';
+              return;
+          }
+
+          list.innerHTML = data.map(user => {
+              const currentMe = auth.getUser();
+              const isSelf = currentMe && currentMe.id === user.Id;
+              
+              return `
+                  <div class="user-row">
+                     <div class="item-details">
+                        <h4>
+                            ${user.FullName} 
+                            <span class="badge badge--${user.Role.toLowerCase()}">${user.Role}</span>
+                            ${user.IsBanned ? '<span class="badge badge--banned">Đã cấm</span>' : ''}
+                            ${isSelf ? '<span class="badge badge--user" style="background:#fef08a;color:#ca8a04;">BẠN</span>' : ''}
+                        </h4>
+                        <p><strong>Địa chỉ Email:</strong> ${user.Email}</p>
+                        <p><strong>Ngày tạo tài khoản:</strong> ${new Date(user.CreatedAt).toLocaleString('vi-VN')}</p>
+                     </div>
+                     
+                     <div class="action-btns" style="align-items: center;">
+                         ${isSelf ? `<span class="text-xs text-slate-400 font-medium">Không thể cấu hình chính mình</span>` : `
+                             ${currentMe.role === 'Admin' ? `<select class="form-input" style="padding:4px 8px; font-size:13px; width: auto;" onchange="changeUserRole('${user.Id}', this.value)">
+                                 <option value="User" ${user.Role === 'User' ? 'selected' : ''}>User</option>
+                                 <option value="Manager" ${user.Role === 'Manager' ? 'selected' : ''}>Manager</option>
+                                 <option value="Owner" ${user.Role === 'Owner' ? 'selected' : ''}>Owner</option>
+                                 <option value="Admin" ${user.Role === 'Admin' ? 'selected' : ''}>Admin</option>
+                             </select>` : `<span class="muted">${user.Role}</span>`}
+                             ${user.IsBanned 
+                                 ? `<button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:green; border-color:#dcfce7;" onclick="toggleUserBan('${user.Id}', false)">Mở khóa</button>`
+                                 : `<button class="btn btn--outline" style="padding:4px 12px; font-size:13px; color:red; border-color:#fee2e2;" onclick="toggleUserBan('${user.Id}', true)">Cấm và Khóa</button>`
+                             }
+                         `}
+                     </div>
+                  </div>
+              `;
+          }).join('');
+      }
+
+      function filterUsersInView() {
+          const query = document.getElementById('userSearchInput').value.toLowerCase().trim();
+          const role = document.getElementById('userRoleFilter').value;
+          
+          let filtered = allUsers;
+          if (query) {
+              filtered = filtered.filter(u => u.FullName.toLowerCase().includes(query) || u.Email.toLowerCase().includes(query));
+          }
+          if (role) {
+              filtered = filtered.filter(u => u.Role === role);
+          }
+          renderUsersList(filtered);
+      }
+
+      async function changeUserRole(id, role) {
+          if (!confirm(`Bạn có chắc chắn cấp quyền hạn "${role}" cho tài khoản này?`)) {
+              loadUsers();
+              return;
+          }
+          try {
+              await api.put(`/admin/users/${id}/role`, { role });
+              toast.success('Đã cập nhật vai trò người dùng thành công.');
+              loadUsers();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      async function toggleUserBan(id, isBanned) {
+          if (!confirm(`Bạn có chắc muốn ${isBanned ? 'CẤM VÀ KHÓA TRUY CẬP' : 'GỠ BỎ CẤM'} tài khoản người dùng này không?`)) return;
+          try {
+              await api.put(`/admin/users/${id}/ban`, { isBanned });
+              toast.success(isBanned ? 'Đã khóa tài khoản thành viên thành công.' : 'Đã gỡ cấm tài khoản thành viên thành công.');
+              loadUsers();
+              computeStats();
+          } catch(err) {
+              toast.error(err.message);
+          }
+      }
+
+      // --- BRAND NEW FILE UPLOAD AND MENU MANAGEMENT SYSTEM ---
+      async function uploadRestaurantBanner(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        toast.info('Đang tải ảnh quán lên...');
+
+        const res = await api.postFormData(
+            '/admin/upload',
+            formData
+        );
+
+        document.getElementById('rForm-bannerurl').value = res.url;
+
+        toast.success('Đã tải ảnh lên thành công!');
+    } catch(err) {
+        toast.error('Lỗi khi tải ảnh lên: ' + err.message);
+    }
+}
+     async function uploadMenuItemPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        toast.info('Đang tải ảnh món ăn lên...');
+
+        const res = await api.postFormData(
+            '/admin/upload',
+            formData
+        );
+
+        document.getElementById('mForm-imageurl').value = res.url;
+
+        toast.success('Đã tải ảnh món ăn lên thành công!');
+    } catch(err) {
+        toast.error('Lỗi khi tải ảnh món: ' + err.message);
+    }
+}
+
+      let currentMenuRestId = '';
+      function openMenuModal(restId, name) {
+          currentMenuRestId = restId;
+          document.getElementById('menuModalTitle').textContent = `Thực đơn: ${name}`;
+          document.getElementById('mForm-restaurantId').value = restId;
+          resetMenuItemForm();
+          
+          document.getElementById('menuManageModal').style.display = 'flex';
+          loadRestaurantMenu(restId);
+      }
+
+      function closeMenuManageModal() {
+          document.getElementById('menuManageModal').style.display = 'none';
+      }
+
+      function resetMenuItemForm() {
+          document.getElementById('menuItemForm').reset();
+          document.getElementById('mForm-id').value = '';
+          document.getElementById('mForm-action').value = 'create';
+          document.getElementById('mForm-restaurantId').value = currentMenuRestId;
+          document.getElementById('menuItemFormTitle').textContent = 'Thêm món ăn mới';
+          document.getElementById('btnSaveMenuItem').textContent = 'Thêm món này';
+      }
+
+      async function loadRestaurantMenu(restId) {
+          const list = document.getElementById('menu-items-list');
+          const loadingMsg = document.getElementById('menu-loading-msg');
+          loadingMsg.style.display = 'block';
+          list.innerHTML = '';
+          
+          try {
+              const res = await api.get(`/admin/restaurants/${restId}/menu`);
+              const menuItems = res.data || [];
+              loadingMsg.style.display = 'none';
+              
+              if (menuItems.length === 0) {
+                  list.innerHTML = '<p style="text-align:center; color:var(--color-text-light); padding:20px; font-size:13px;">Thực đơn hiện tại rỗng. Hãy thêm món ăn đầu tiên bằng mẫu bên dưới!</p>';
+                  return;
+              }
+              
+              list.innerHTML = menuItems.map(item => {
+                  const priceFormatted = utils.formatPrice(item.Price || 0);
+                  const availableBadge = item.IsAvailable 
+                      ? '<span class="badge badge--approved" style="font-size:9px; padding:2px 6px;">Còn hàng</span>' 
+                      : '<span class="badge badge--rejected" style="font-size:9px; padding:2px 6px;">Hết hàng</span>';
+                  
+                  return `
+                      <div class="menu-item-row" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(226, 232, 240, 0.6); padding-bottom:8px; gap:12px;">
+                          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                              <img src="${item.ImageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c4?auto=format&fit=crop&w=700&q=80'}" style="width:45px; height:45px; border-radius:6px; object-fit:cover; flex-shrink:0;">
+                              <div style="min-width:0; flex:1;">
+                                  <h5 style="margin:0; font-size:14px; font-weight:700; color:var(--color-secondary); display:flex; align-items:center; gap:6px;">
+                                      ${item.Name}
+                                      ${availableBadge}
+                                  </h5>
+                                  <p style="margin:2px 0 0; font-size:12px; color:var(--color-text-light); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-weight:450;">
+                                      ${item.Description || 'Không có mô tả sản phẩm.'}
+                                  </p>
+                              </div>
+                          </div>
+                          <div style="text-align:right; flex-shrink:0; display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                              <span style="font-weight:700; color:var(--color-primary); font-size:13px;">${priceFormatted}</span>
+                              <div style="display:flex; gap:6px;">
+                                  <button type="button" class="btn btn--outline" style="padding:2px 8px; font-size:11px; font-weight:700; border-color:var(--color-border); color:var(--color-secondary);" 
+                                      onclick="editMenuItem('${item.Id}', '${item.Name.replace(/'/g, "\\'")}', '${(item.Description || '').replace(/'/g, "\\'")}', ${item.Price}, '${item.ImageUrl || ''}', ${item.IsAvailable})">Sửa</button>
+                                  <button type="button" class="btn btn--outline" style="padding:2px 8px; font-size:11px; font-weight:700; color:red; border-color:#fee2e2;" 
+                                      onclick="deleteMenuItem('${item.Id}')">Xóa</button>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+              }).join('');
+          } catch(err) {
+              loadingMsg.style.display = 'none';
+              list.innerHTML = `<p style="color:red; font-size:12px;">Không thể tải danh sách thực đơn: ${err.message}</p>`;
+          }
+      }
+
+      async function handleMenuItemFormSubmit(e) {
+          e.preventDefault();
+          const action = document.getElementById('mForm-action').value;
+          const menuId = document.getElementById('mForm-id').value;
+          const restId = document.getElementById('mForm-restaurantId').value;
+          
+          const payload = {
+              Name: document.getElementById('mForm-name').value.trim(),
+              Price: parseInt(document.getElementById('mForm-price').value) || 0,
+              Description: document.getElementById('mForm-description').value.trim(),
+              ImageUrl: document.getElementById('mForm-imageurl').value.trim(),
+              IsAvailable: document.getElementById('mForm-isavailable').checked
+          };
+          
+          try {
+              if (action === 'create') {
+                  await api.post(`/admin/restaurants/${restId}/menu`, payload);
+                  toast.success('Đã thêm sản phẩm mới vào thực đơn!');
+              } else {
+                  await api.put(`/admin/menu/${menuId}`, payload);
+                  toast.success('Đã cập nhật món ăn thực đơn thành công.');
+              }
+              resetMenuItemForm();
+              loadRestaurantMenu(restId);
+          } catch(err) {
+              toast.error('Lỗi khi xử lý sản phẩm: ' + err.message);
+          }
+      }
+
+      function editMenuItem(id, name, desc, price, imgUrl, isAvailable) {
+          document.getElementById('menuItemFormTitle').textContent = `Sửa món: ${name}`;
+          document.getElementById('mForm-action').value = 'update';
+          document.getElementById('mForm-id').value = id;
+          
+          document.getElementById('mForm-name').value = name;
+          document.getElementById('mForm-price').value = price;
+          document.getElementById('mForm-description').value = desc;
+          document.getElementById('mForm-imageurl').value = imgUrl;
+          document.getElementById('mForm-isavailable').checked = !!isAvailable;
+          
+          document.getElementById('btnSaveMenuItem').textContent = 'Cập nhật món';
+      }
+
+      async function deleteMenuItem(id) {
+          if (!confirm('Bạn có chắc chắn muốn xóa rời món ăn này khỏi thực đơn?')) return;
+          try {
+              await api.delete(`/admin/menu/${id}`);
+              toast.success('Đã gỡ món ăn thành công.');
+              loadRestaurantMenu(currentMenuRestId);
+          } catch(err) {
+              toast.error('Lỗi khi xóa món ăn: ' + err.message);
+          }
+      }
+    </script>
+</body>
+</html>

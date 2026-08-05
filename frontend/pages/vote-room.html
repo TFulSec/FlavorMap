@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Phòng bình chọn — FlavorMap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body class="vote-room-page"><div id="navbar-placeholder"></div>
+<main class="container vote-page">
+  <header class="page-header" style="margin-top:0;">
+    <span class="eyebrow">Đi ăn cùng nhau</span>
+    <h1>Chọn quán bằng bình chọn nhóm</h1>
+    <p>Tính năng này giúp nhóm bạn rút gọn danh sách quán và chọn một địa điểm công bằng thay vì tranh luận qua nhiều tin nhắn.</p>
+  </header>
+  <div class="vote-guide" aria-label="Cách sử dụng phòng bình chọn">
+    <div class="vote-guide__item"><strong>1. Chọn quán ứng viên</strong><span>Chọn từ 2 đến 20 quán trong danh sách hoặc thêm từ trang Gợi ý cho tôi.</span></div>
+    <div class="vote-guide__item"><strong>2. Tạo và chia sẻ phòng</strong><span>Hệ thống tạo mã 6 ký tự để gửi cho bạn bè cùng tham gia.</span></div>
+    <div class="vote-guide__item"><strong>3. Bình chọn và đổi lựa chọn</strong><span>Bấm lại quán đã chọn để bỏ phiếu, hoặc bấm quán khác để chuyển phiếu. Kết quả cập nhật tự động.</span></div>
+  </div>
+  <div class="vote-grid">
+    <section class="vote-card"><h2>Tạo phòng mới</h2><p class="muted" style="font-size:.82rem;">Chọn từ 2 đến 20 quán. Bạn cần đăng nhập để tạo phòng.</p>
+      <input id="restaurantSearch" class="form-input" placeholder="Tìm tên quán..." style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px;font-size:.76rem;color:var(--color-text-light);"><span>Đã chọn <strong id="selectedCount">0</strong>/20 quán</span><button type="button" class="btn btn--outline" id="clearSelection" style="min-height:34px;padding:5px 9px;">Bỏ chọn</button></div>
+      <div id="restaurantChecks" class="restaurant-checks"><p>Đang tải...</p></div>
+      <button class="btn btn--primary" id="createRoomBtn" disabled>Tạo phòng bình chọn</button>
+    </section>
+    <section class="vote-card"><h2>Tham gia bằng mã</h2><p class="muted" style="font-size:.82rem;">Nhập mã được chia sẻ để xem danh sách quán và bỏ phiếu.</p>
+      <div class="join-row" style="margin-top:14px;"><input id="roomCodeInput" maxlength="6" placeholder="ABC234"><button class="btn btn--primary" id="joinRoomBtn">Mở phòng</button></div>
+      <div id="roomPanel" style="display:none;margin-top:24px;"><div class="muted" style="font-size:.75rem;">Mã phòng</div><div class="room-code" id="roomCode"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;"><button type="button" class="btn btn--outline" id="copyRoomBtn">Sao chép mã</button><button type="button" class="btn btn--outline" id="shareRoomBtn">Chia sẻ phòng</button></div><div id="roomStatus" style="margin:8px 0 14px;"></div><div id="voteOptions"></div><button class="btn btn--outline" id="closeRoomBtn" style="display:none;margin-top:14px;">Đóng bình chọn</button></div>
+    </section>
+  </div>
+</main>
+<script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/navbar.js"></script>
+    <script src="/assets/js/feature-helpers.js"></script>
+<script>
+    const state = { restaurants: [], selectedIds: new Set(), code: null, room: null, pollTimer: null };
+    const VOTE_SELECTION_KEY = 'flavormapVoteSelection';
+    document.addEventListener('DOMContentLoaded', async () => {
+      navbar.render();
+      bindEvents();
+      let stored = [];
+      try { stored = JSON.parse(localStorage.getItem(VOTE_SELECTION_KEY) || '[]'); }
+      catch { localStorage.removeItem(VOTE_SELECTION_KEY); }
+      if (Array.isArray(stored)) stored.forEach((id) => state.selectedIds.add(String(id)));
+      const queryParams = new URLSearchParams(location.search);
+      const suggestedRestaurantId = queryParams.get('restaurant');
+      if (suggestedRestaurantId) state.selectedIds.add(String(suggestedRestaurantId));
+      await loadRestaurants();
+      const code = queryParams.get('code');
+      if (code) { document.getElementById('roomCodeInput').value = code; await openRoom(code); }
+    });
+
+    function bindEvents() {
+      document.getElementById('restaurantSearch').addEventListener('input', renderRestaurantChecks);
+      document.getElementById('restaurantChecks').addEventListener('change', (event) => {
+        if (!event.target.matches('input[type=checkbox]')) return;
+        const id = String(event.target.value);
+        if (event.target.checked) state.selectedIds.add(id); else state.selectedIds.delete(id);
+        updateSelectedCount();
+      });
+      document.getElementById('clearSelection').onclick = () => { state.selectedIds.clear(); localStorage.removeItem(VOTE_SELECTION_KEY); renderRestaurantChecks(); };
+      document.getElementById('createRoomBtn').onclick = createRoom;
+      document.getElementById('joinRoomBtn').onclick = () => openRoom(document.getElementById('roomCodeInput').value);
+      document.getElementById('roomCodeInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') openRoom(event.target.value); });
+      document.getElementById('closeRoomBtn').onclick = closeRoom;
+      document.getElementById('copyRoomBtn').onclick = copyRoom;
+      document.getElementById('shareRoomBtn').onclick = shareRoom;
+    }
+
+    async function loadRestaurants() {
+      try {
+        const response = await api.get('/restaurants?limit=100&page=1');
+        state.restaurants = response.data.data || [];
+        renderRestaurantChecks();
+      } catch (error) { toast.error(error.message); }
+    }
+
+    function renderRestaurantChecks() {
+      const query = document.getElementById('restaurantSearch').value.trim().toLowerCase();
+      const rows = state.restaurants.filter((item) => item.Name.toLowerCase().includes(query));
+      const selected = state.selectedIds;
+      document.getElementById('restaurantChecks').innerHTML = rows.map((item) => `<label class="restaurant-check">
+        <input type="checkbox" value="${utils.escapeHtml(item.Id)}" ${selected.has(String(item.Id)) ? 'checked' : ''}> <span><strong>${utils.escapeHtml(item.Name)}</strong><br><small>${utils.escapeHtml(item.Address || '')}</small></span>
+      </label>`).join('') || '<p>Không tìm thấy quán.</p>';
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      if (state.selectedIds.size > 20) {
+        const last = [...state.selectedIds].at(-1);
+        state.selectedIds.delete(last);
+        const input = document.querySelector(`#restaurantChecks input[value="${CSS.escape(last)}"]`);
+        if (input) input.checked = false;
+        toast.error('Mỗi phòng chỉ được chọn tối đa 20 quán.');
+      }
+      const count = state.selectedIds.size;
+      localStorage.setItem(VOTE_SELECTION_KEY, JSON.stringify([...state.selectedIds]));
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('createRoomBtn').disabled = count < 2 || count > 20;
+    }
+
+    function requireLogin() {
+      if (auth.getUser()) return true;
+      toast.error('Vui lòng đăng nhập để tạo phòng hoặc bình chọn.');
+      setTimeout(() => location.href = featureHelpers.loginUrl(), 500);
+      return false;
+    }
+
+    async function createRoom() {
+      if (!requireLogin()) return;
+      const button = document.getElementById('createRoomBtn');
+      const restaurantIds = [...state.selectedIds];
+      if (restaurantIds.length < 2) { toast.error('Hãy chọn ít nhất 2 quán.'); return; }
+      featureHelpers.setButtonLoading(button, true, 'Đang tạo phòng...');
+      try {
+        const response = await api.post('/vote-rooms', { restaurantIds });
+        document.getElementById('roomCodeInput').value = response.data.code;
+        history.replaceState(null, '', `/pages/vote-room.html?code=${response.data.code}`);
+        await openRoom(response.data.code);
+        state.selectedIds.clear();
+        localStorage.removeItem(VOTE_SELECTION_KEY);
+        renderRestaurantChecks();
+        toast.success(`Đã tạo phòng ${response.data.code}.`);
+      } catch (error) { toast.error(error.message); }
+      finally { featureHelpers.setButtonLoading(button, false); updateSelectedCount(); }
+    }
+
+    async function openRoom(rawCode) {
+      const code = String(rawCode || '').trim().toUpperCase();
+      if (code.length !== 6) { toast.error('Mã phòng phải có 6 ký tự.'); return; }
+      try {
+        const response = await api.get(`/vote-rooms/${encodeURIComponent(code)}`);
+        state.code = code;
+        state.room = response.data;
+        renderRoom();
+        clearInterval(state.pollTimer);
+        state.pollTimer = setInterval(pollRoom, 3000);
+      } catch (error) { toast.error(error.message); }
+    }
+
+    async function pollRoom() {
+      if (!state.code) return;
+      try {
+        const response = await api.get(`/vote-rooms/${encodeURIComponent(state.code)}`);
+        state.room = response.data;
+        renderRoom();
+        if (state.room.status === 'closed') clearInterval(state.pollTimer);
+      } catch { /* polling failure is intentionally quiet */ }
+    }
+
+    function renderRoom() {
+      const room = state.room;
+      document.getElementById('roomPanel').style.display = 'block';
+      document.getElementById('roomCode').textContent = room.code;
+      const statusText = room.status === 'open'
+        ? '🟢 Đang mở · tự cập nhật mỗi 3 giây'
+        : '🔒 Đã đóng';
+      const selectionHint = room.status === 'open' && auth.getUser()
+        ? '<div style="margin-top:4px;font-size:.75rem;color:var(--color-text-muted);">Bấm lại lựa chọn hiện tại để bỏ phiếu, hoặc chọn quán khác để đổi phiếu.</div>'
+        : '';
+      document.getElementById('roomStatus').innerHTML = `${statusText}${selectionHint}`;
+
+      const totalVotes = room.restaurants.reduce((sum, item) => sum + Number(item.voteCount || 0), 0);
+      document.getElementById('voteOptions').innerHTML = room.restaurants.map((item) => {
+        const votes = Number(item.voteCount || 0);
+        const percent = totalVotes ? Math.round(votes * 100 / totalVotes) : 0;
+        const isSelected = String(room.myVoteRestaurantId || '') === String(item.id);
+        const buttonText = isSelected ? 'Bỏ bình chọn' : 'Bình chọn';
+        const buttonClass = isSelected ? 'btn btn--outline vote-btn' : 'btn btn--primary vote-btn';
+        const selectedLabel = isSelected
+          ? '<div style="margin-top:5px;font-size:.72rem;font-weight:700;color:var(--color-primary);">✓ Lựa chọn của bạn</div>'
+          : '';
+        return `<div class="vote-option" ${isSelected ? 'data-selected="true"' : ''}>
+          <div style="min-width:0;flex:1;"><strong>${utils.escapeHtml(item.name)}</strong><div style="color:var(--color-text-muted);">${utils.escapeHtml(item.address || '')}</div>${selectedLabel}<div style="height:7px;background:#eee6dd;border-radius:999px;margin-top:9px;overflow:hidden;"><span style="display:block;height:100%;width:${percent}%;background:var(--color-primary);border-radius:999px;"></span></div></div>
+          <div style="text-align:right;"><div class="vote-count">${votes} <small>(${percent}%)</small></div><button class="${buttonClass}" data-id="${utils.escapeHtml(item.id)}" aria-pressed="${isSelected}" ${room.status !== 'open' ? 'disabled' : ''}>${buttonText}</button></div>
+        </div>`;
+      }).join('');
+      document.querySelectorAll('.vote-btn').forEach((button) => button.onclick = () => vote(button.dataset.id));
+      const user = auth.getUser();
+      const canClose = user && (String(user.id) === String(room.createdByUserId) || ['Admin', 'Manager'].includes(user.role));
+      document.getElementById('closeRoomBtn').style.display = canClose && room.status === 'open' ? 'inline-flex' : 'none';
+    }
+
+    async function copyRoom() {
+      if (!state.code) return;
+      await navigator.clipboard.writeText(state.code);
+      toast.success('Đã sao chép mã phòng.');
+    }
+
+    async function shareRoom() {
+      if (!state.code) return;
+      const url = `${location.origin}/pages/vote-room.html?code=${encodeURIComponent(state.code)}`;
+      if (navigator.share) await navigator.share({ title: `Phòng bình chọn ${state.code}`, url }).catch(() => {});
+      else { await navigator.clipboard.writeText(url); toast.success('Đã sao chép liên kết phòng.'); }
+    }
+
+    async function vote(restaurantId) {
+      if (!requireLogin()) return;
+      const buttons = [...document.querySelectorAll('.vote-btn')];
+      buttons.forEach((button) => { button.disabled = true; });
+
+      try {
+        const response = await api.post(
+          `/vote-rooms/${encodeURIComponent(state.code)}/vote`,
+          { restaurantId }
+        );
+        const result = response.data || {};
+
+        if (result.action === 'removed') {
+          toast.success('Đã bỏ bình chọn. Bạn có thể chọn lại.');
+        } else if (result.action === 'changed') {
+          toast.success('Đã đổi bình chọn sang quán mới.');
+        } else {
+          toast.success('Đã ghi nhận bình chọn.');
+        }
+
+        await pollRoom();
+      } catch (error) {
+        toast.error(error.message);
+        renderRoom();
+      }
+    }
+
+    async function closeRoom() {
+      try {
+        await api.patch(`/vote-rooms/${encodeURIComponent(state.code)}/status`, { status: 'closed' });
+        await pollRoom();
+        toast.success('Đã đóng phòng.');
+      } catch (error) { toast.error(error.message); }
+    }
+  </script>
+
+</body></html>

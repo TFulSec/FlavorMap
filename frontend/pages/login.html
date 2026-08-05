@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .text-center { text-align: center; margin-top: 1.5rem; font-size: var(--font-size-sm); color: var(--color-text-light); font-weight: 550; }
+      .auth-error {
+        margin-bottom: 1rem;
+        padding: .85rem 1rem;
+        color: #991b1b;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-left: 4px solid #dc2626;
+        border-radius: .75rem;
+        font-size: .9rem;
+        font-weight: 650;
+      }
+      .auth-error[hidden] { display: none; }
+      .form-input[aria-invalid="true"] {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+      }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="auth-container">
+      <div class="auth-header">
+        <h2>Chào mừng trở lại</h2>
+        <p>Đăng nhập tài khoản Thổ Địa Ẩm Thực của bạn</p>
+      </div>
+      <form id="loginForm" novalidate>
+        <div id="loginError" class="auth-error" role="alert" aria-live="assertive" hidden></div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu</label>
+          <div class="input-wrap">
+            <input type="password" id="password" class="form-input" style="width: 100%;" required>
+            <button type="button" class="toggle-pw" onclick="togglePw('password')">👁️</button>
+          </div>
+        </div>
+        <button id="loginSubmit" type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Đăng nhập</button>
+        <p class="text-center">
+          Chưa có tài khoản? <a href="/pages/register.html" style="color: var(--color-primary); font-weight:600;">Đăng ký</a>
+        </p>
+      </form>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (auth.isLoggedIn()) {
+          window.location.href = '/pages/index.html';
+        }
+        navbar.render();
+      });
+
+      function togglePw(id) {
+        const el = document.getElementById(id);
+        el.type = el.type === 'password' ? 'text' : 'password';
+      }
+
+      const loginForm = document.getElementById('loginForm');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const loginError = document.getElementById('loginError');
+      const loginSubmit = document.getElementById('loginSubmit');
+
+      function clearLoginError() {
+        loginError.hidden = true;
+        loginError.textContent = '';
+        emailInput.removeAttribute('aria-invalid');
+        passwordInput.removeAttribute('aria-invalid');
+      }
+
+      function showLoginError(message) {
+        const safeMessage = message || 'Không thể đăng nhập. Vui lòng thử lại.';
+        loginError.textContent = safeMessage;
+        loginError.hidden = false;
+        emailInput.setAttribute('aria-invalid', 'true');
+        passwordInput.setAttribute('aria-invalid', 'true');
+        passwordInput.focus();
+        toast.error(safeMessage);
+      }
+
+      emailInput.addEventListener('input', clearLoginError);
+      passwordInput.addEventListener('input', clearLoginError);
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearLoginError();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          showLoginError('Vui lòng nhập đầy đủ email và mật khẩu.');
+          return;
+        }
+
+        loginSubmit.disabled = true;
+        loginSubmit.textContent = 'Đang đăng nhập...';
+
+        try {
+          const res = await api.post('/auth/login', { email, password });
+          auth.setSession(res.data);
+          toast.success(res.message || 'Đăng nhập thành công!');
+
+          const redirect = utils.safeRedirect(utils.getParam('redirect'));
+          setTimeout(() => window.location.href = redirect, 700);
+        } catch (err) {
+          showLoginError(err?.message);
+        } finally {
+          loginSubmit.disabled = false;
+          loginSubmit.textContent = 'Đăng nhập';
+        }
+      });
+    </script>
+</body>
+</html>

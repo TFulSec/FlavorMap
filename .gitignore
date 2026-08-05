@@ -1,0 +1,35 @@
+# Dependencies and generated output
+node_modules/
+build/
+dist/
+coverage/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data
+mock-users.json
+mock-refresh-tokens.json
+backend/uploads/*
+!backend/uploads/submissions/
+backend/uploads/submissions/*
+!backend/uploads/submissions/.gitkeep
+logs/
+*.log
+npm-debug.log*
+
+# Database backups and deployment archives
+*.bak
+*.zip
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary package backups
+package.before-*.json
+package-lock.before-*.json

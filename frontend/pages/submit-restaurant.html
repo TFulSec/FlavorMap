@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng ký quán của tôi - Thổ Địa Ẩm Thực</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    .application-shell{max-width:1080px;margin:38px auto;padding:0 18px 110px}.application-intro{background:linear-gradient(135deg,#fff7ed,#fff);border:1px solid var(--color-border);border-radius:26px;padding:28px;margin-bottom:24px}.application-intro h1{margin:0 0 8px;color:var(--color-secondary)}
+    .trust-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}.trust-step{background:#fff;border:1px solid var(--color-border);border-radius:16px;padding:14px;font-size:.9rem}.trust-step strong{display:block;color:var(--color-primary);margin-bottom:5px}
+    .application-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.8fr);gap:24px}.application-card{background:#fff;border:1px solid var(--color-border);border-radius:22px;padding:24px;box-shadow:var(--shadow-sm)}.section-block{border-top:1px solid var(--color-border);padding-top:20px;margin-top:20px}.section-block:first-child{border-top:0;padding-top:0;margin-top:0}.section-block h2{font-size:1.18rem;margin:0 0 14px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-grid .wide{grid-column:1/-1}.file-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.file-box{border:1px dashed var(--color-border);border-radius:14px;padding:13px;background:#fafafa}.file-box label{font-weight:800;display:block;margin-bottom:7px}.required-proof{color:#b91c1c}.form-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.application-list{display:flex;flex-direction:column;gap:12px}.application-item{border:1px solid var(--color-border);border-radius:16px;padding:15px}.status-pill{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:.78rem;font-weight:800;background:#f1f5f9}.status-Submitted,.status-UnderReview{background:#eff6ff;color:#1d4ed8}.status-NeedsChanges{background:#fff7ed;color:#c2410c}.status-Approved{background:#ecfdf5;color:#047857}.status-Rejected{background:#fef2f2;color:#b91c1c}.policy-note{background:#f8fafc;border-radius:14px;padding:14px;color:#475569;font-size:.9rem}.preview-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.preview-row img{width:70px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--color-border)}
+    @media(max-width:860px){.application-grid{grid-template-columns:1fr}.trust-flow{grid-template-columns:1fr 1fr}}@media(max-width:620px){.form-grid,.file-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.trust-flow{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <main class="application-shell">
+    <section class="application-intro">
+      <span class="eyebrow">Dành cho Chủ quán</span>
+      <h1>Đăng ký và xác minh quán của bạn</h1>
+      <p>Quán chưa được hiển thị công khai ngay sau khi gửi. Admin sẽ kiểm tra người đăng, sự tồn tại của quán, địa chỉ, hình ảnh, menu và khả năng trùng lặp trước khi xuất bản.</p>
+      <div class="trust-flow">
+        <div class="trust-step"><strong>1. Cung cấp hồ sơ</strong>Thông tin quán và người quản lý.</div>
+        <div class="trust-step"><strong>2. Gửi bằng chứng</strong>Ảnh mặt tiền, menu và quyền quản lý.</div>
+        <div class="trust-step"><strong>3. Admin kiểm tra</strong>Có thể yêu cầu bổ sung hoặc từ chối có lý do.</div>
+        <div class="trust-step"><strong>4. Xuất bản</strong>Quán được gắn nhãn đã xác minh và giao cho Chủ quán.</div>
+      </div>
+    </section>
+
+    <div class="application-grid">
+      <section class="application-card">
+        <form id="applicationForm">
+          <input type="hidden" name="submissionType" value="OwnerCreate">
+          <input type="hidden" name="claimedRestaurantId" value="">
+          <div id="claimNotice" class="policy-note" style="display:none;margin-bottom:18px;color:#1d4ed8"><strong>Yêu cầu quyền quản lý:</strong> Hồ sơ này dùng để xác minh bạn là Chủ quán của địa điểm đã có trên FlavorMap.</div>
+          <div class="section-block">
+            <h2>Thông tin người đăng</h2>
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Email liên hệ *</label><input id="ownerEmail" name="ownerEmail" type="email" class="form-input" required></div>
+              <div class="form-group"><label class="form-label">Số điện thoại *</label><input name="ownerPhone" type="tel" class="form-input" required minlength="8"></div>
+              <div class="form-group wide"><label class="form-label">Quan hệ với quán *</label><select name="ownerRelationship" class="form-input" required><option value="">Chọn vai trò</option><option>Chủ sở hữu</option><option>Người được ủy quyền</option><option>Quản lý quán</option></select></div>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <h2>Thông tin quán</h2>
+            <div class="form-grid">
+              <div class="form-group wide"><label class="form-label">Tên quán *</label><input name="name" class="form-input" minlength="3" required></div>
+              <div class="form-group wide"><label class="form-label">Địa chỉ chính xác *</label><input id="ownerAddress" name="address" class="form-input" minlength="5" required></div>
+              <div class="form-group"><label class="form-label">Quận/Huyện</label><input id="ownerDistrict" name="district" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Thành phố *</label><input id="ownerCity" name="city" class="form-input" value="Hà Nội" required></div>
+              <div class="form-group"><label class="form-label">Danh mục *</label><select name="category" class="form-input" required><option value="">Chọn danh mục</option><option value="Cafe">Cafe & Trà</option><option value="Cơm">Món Việt (bún, phở, cơm...)</option><option value="Đồ ăn vặt">Đồ ăn vặt</option><option value="Nước">Đồ uống</option><option value="Hải sản">Hải sản</option><option value="Khác">Ẩm thực khác</option></select></div>
+              <div class="form-group"><label class="form-label">Điện thoại quán</label><input name="storePhone" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Giờ mở cửa *</label><input name="openingTime" type="time" class="form-input" value="08:00" required></div>
+              <div class="form-group"><label class="form-label">Giờ đóng cửa *</label><input name="closingTime" type="time" class="form-input" value="22:00" required></div>
+              <div class="form-group"><label class="form-label">Giá tối thiểu</label><input name="suggestedPriceMin" type="number" min="0" class="form-input" value="0"></div>
+              <div class="form-group"><label class="form-label">Giá tối đa</label><input name="suggestedPriceMax" type="number" min="0" class="form-input" value="100000"></div>
+              <div class="form-group"><label class="form-label">Vĩ độ</label><input id="latitude" name="latitude" type="number" step="any" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Kinh độ</label><input id="longitude" name="longitude" type="number" step="any" class="form-input"></div>
+              <div class="form-group wide">
+                <label class="form-label" for="ownerAddressSearch">Tìm vị trí quán trên bản đồ</label>
+                <div class="map-picker">
+                  <div class="map-picker__search">
+                    <input id="ownerAddressSearch" class="form-input" placeholder="Nhập số nhà, tên đường, quận/huyện...">
+                    <button id="ownerAddressSearchBtn" type="button" class="btn btn--outline">Tìm địa chỉ</button>
+                  </div>
+                  <div id="ownerAddressResults" class="map-picker__results"></div>
+                  <div id="ownerLocationMap" class="map-picker__map" aria-label="Bản đồ chọn vị trí quán"></div>
+                  <p class="map-picker__hint">Tìm địa chỉ, bấm trên bản đồ hoặc kéo ghim để điền tọa độ chính xác.</p>
+                </div>
+              </div>
+              <div class="form-group wide"><button id="locationBtn" type="button" class="btn btn--outline">Dùng vị trí hiện tại</button></div>
+              <div class="form-group wide"><label class="form-label">Mô tả quán</label><textarea name="description" class="form-input" rows="4" maxlength="3000"></textarea></div>
+              <div class="form-group"><label class="form-label">Website</label><input name="websiteUrl" type="url" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Facebook</label><input name="facebookUrl" type="url" class="form-input"></div>
+              <div class="form-group wide"><label class="form-label">Số Zalo</label><input name="zaloPhone" class="form-input"></div>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <h2>Bằng chứng xác minh</h2>
+            <div class="file-grid">
+              <div class="file-box"><label>Ảnh mặt tiền <span class="required-proof">*</span></label><input name="storefrontImage" type="file" accept="image/jpeg,image/png,image/webp"></div>
+              <div class="file-box"><label>Ảnh bên trong quán</label><input name="interiorImage" type="file" accept="image/jpeg,image/png,image/webp"></div>
+              <div class="file-box"><label>Ảnh menu/bảng giá <span class="required-proof">*</span></label><input name="menuProof" type="file" accept="image/jpeg,image/png,image/webp"></div>
+              <div class="file-box"><label>Bằng chứng quyền quản lý <span class="required-proof">*</span></label><input name="businessProof" type="file" accept="image/jpeg,image/png,image/webp"></div>
+            </div>
+            <p class="policy-note">Các bằng chứng chỉ phục vụ xét duyệt nội bộ và không được hiển thị công khai. Chấp nhận JPEG, PNG, WEBP; tối đa 5 MB mỗi ảnh.</p>
+          </div>
+
+          <div class="form-actions">
+            <button id="saveDraftBtn" type="button" class="btn btn--outline">Lưu bản nháp</button>
+            <button id="submitBtn" type="submit" class="btn btn--primary">Gửi hồ sơ xét duyệt</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="application-card">
+        <h2>Hồ sơ của tôi</h2>
+        <p class="policy-note">Theo dõi trạng thái và phản hồi của Admin tại đây.</p>
+        <div id="myApplications" class="application-list"><p>Đang tải...</p></div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/navbar.js"></script>
+  <script src="/assets/js/feature-helpers.js"></script>
+  <script src="/assets/js/map-picker.js"></script>
+  <script>
+    let editingApplicationId = null;
+    let ownerMapPicker = null;
+    const statusLabels = {Draft:'Bản nháp',Submitted:'Đã gửi',UnderReview:'Đang kiểm tra',NeedsChanges:'Cần bổ sung',Approved:'Đã phê duyệt',Rejected:'Bị từ chối'};
+
+    async function loadApplications(){
+      const box=document.getElementById('myApplications');
+      try{
+        const res=await api.get('/owner-applications/me'); const items=res.data||[];
+        if(!items.length){box.innerHTML='<p class="empty-state-small">Bạn chưa có hồ sơ đăng ký quán.</p>';return;}
+        box.innerHTML=items.map(item=>`<article class="application-item">
+          <span class="status-pill status-${utils.escapeHtml(item.Status)}">${utils.escapeHtml(statusLabels[item.Status]||item.Status)}</span>
+          <h3 style="margin:10px 0 5px">${utils.escapeHtml(item.Name)}</h3>
+          <p style="margin:0;color:var(--color-text-light)">${utils.escapeHtml(item.Address||'')}</p>
+          ${item.AdminNote?`<p class="policy-note"><strong>Cần bổ sung:</strong> ${utils.escapeHtml(item.AdminNote)}</p>`:''}
+          ${item.RejectionReason?`<p class="policy-note" style="color:#b91c1c"><strong>Lý do từ chối:</strong> ${utils.escapeHtml(item.RejectionReason)}</p>`:''}
+          ${['Draft','NeedsChanges'].includes(item.Status)?`<button class="btn btn--outline" onclick="editApplication('${utils.escapeHtml(item.Id)}')">${item.Status==='NeedsChanges'?'Bổ sung hồ sơ':'Tiếp tục chỉnh sửa'}</button>`:''}
+          ${item.ApprovedRestaurantId?'<p style="color:#047857;font-weight:800">Quán đã được xuất bản và gán quyền quản lý.</p>':''}
+        </article>`).join('');
+      }catch(error){box.innerHTML=`<p class="empty-state-small">${utils.escapeHtml(error.message)}</p>`;}
+    }
+
+    async function editApplication(id){
+      try{
+        const res=await api.get(`/owner-applications/${id}`);const item=res.data;editingApplicationId=id;
+        const form=document.getElementById('applicationForm');
+        const values={submissionType:item.SubmissionType||'OwnerCreate',claimedRestaurantId:item.ClaimedRestaurantId||'',name:item.Name,address:item.Address,district:item.District,city:item.City,category:item.Category,description:item.Description,suggestedPriceMin:item.SuggestedPriceMin,suggestedPriceMax:item.SuggestedPriceMax,latitude:item.Latitude,longitude:item.Longitude,ownerPhone:item.OwnerPhone,ownerEmail:item.OwnerEmail,ownerRelationship:item.OwnerRelationship,storePhone:item.StorePhone,websiteUrl:item.WebsiteUrl,facebookUrl:item.FacebookUrl,zaloPhone:item.ZaloPhone,openingTime:String(item.OpeningTime||'08:00').slice(0,5),closingTime:String(item.ClosingTime||'22:00').slice(0,5)};
+        Object.entries(values).forEach(([name,value])=>{const field=form.elements.namedItem(name);if(field&&value!=null)field.value=value;});
+        document.getElementById('submitBtn').textContent='Cập nhật và gửi lại';document.getElementById('saveDraftBtn').textContent='Lưu thay đổi';
+        form.scrollIntoView({behavior:'smooth',block:'start'});toast.info('Đã tải hồ sơ để bổ sung. Các ảnh cũ được giữ nếu bạn không chọn ảnh mới.');
+      }catch(error){toast.error(error.message);}
+    }
+
+    async function sendApplication(submitNow){
+      const form=document.getElementById('applicationForm'); if(!form.reportValidity()) return;
+      const button=submitNow?document.getElementById('submitBtn'):document.getElementById('saveDraftBtn'); featureHelpers.setButtonLoading(button,true,submitNow?'Đang gửi hồ sơ...':'Đang lưu...');
+      try{
+        const data=new FormData(form); data.set('submitNow',String(submitNow));
+        const result=editingApplicationId
+          ? await api.putFormData(`/owner-applications/${editingApplicationId}`,data)
+          : await api.postFormData('/owner-applications',data);
+        toast.success(result.message); editingApplicationId=null; form.reset(); document.getElementById('submitBtn').textContent='Gửi hồ sơ xét duyệt'; document.getElementById('saveDraftBtn').textContent='Lưu bản nháp'; document.querySelector('[name=city]').value='Hà Nội'; document.querySelector('[name=openingTime]').value='08:00'; document.querySelector('[name=closingTime]').value='22:00'; document.querySelector('[name=submissionType]').value='OwnerCreate'; document.querySelector('[name=claimedRestaurantId]').value=''; document.getElementById('claimNotice').style.display='none'; await loadApplications();
+      }catch(error){toast.error(error.message);}finally{featureHelpers.setButtonLoading(button,false);}
+    }
+
+    async function prefillClaimFromUrl(){
+      const slug=new URLSearchParams(location.search).get('claimSlug');
+      if(!slug)return;
+      try{
+        const res=await api.get(`/restaurants/${encodeURIComponent(slug)}`);const item=res.data||res;
+        const form=document.getElementById('applicationForm');
+        form.elements.namedItem('submissionType').value='OwnerClaim';
+        form.elements.namedItem('claimedRestaurantId').value=item.Id;
+        const values={name:item.Name,address:item.Address,district:item.District,city:item.City,category:item.Category,description:item.Description,suggestedPriceMin:item.PriceMin,suggestedPriceMax:item.PriceMax,latitude:item.Latitude,longitude:item.Longitude,storePhone:item.Phone,websiteUrl:item.WebsiteUrl,facebookUrl:item.FacebookUrl,zaloPhone:item.ZaloPhone,openingTime:String(item.OpeningTime||'08:00').slice(0,5),closingTime:String(item.ClosingTime||'22:00').slice(0,5)};
+        Object.entries(values).forEach(([name,value])=>{const field=form.elements.namedItem(name);if(field&&value!=null)field.value=value;});
+        document.getElementById('claimNotice').style.display='block';
+        document.querySelector('.application-intro h1').textContent='Yêu cầu quyền quản lý quán';
+        document.getElementById('submitBtn').textContent='Gửi yêu cầu xác minh quyền quản lý';
+      }catch(error){toast.error(`Không thể tải quán cần nhận quyền: ${error.message}`);}
+    }
+
+    document.addEventListener('DOMContentLoaded',async()=>{
+      if(!auth.requireLogin()) return; await navbar.render();
+      const user=await auth.syncCurrentUser(); if(user?.email) document.getElementById('ownerEmail').value=user.email;
+      ownerMapPicker = await mapPicker.create({
+        mapId:'ownerLocationMap', searchInputId:'ownerAddressSearch', searchButtonId:'ownerAddressSearchBtn', resultsId:'ownerAddressResults',
+        latitudeInputId:'latitude', longitudeInputId:'longitude', addressInputId:'ownerAddress', districtInputId:'ownerDistrict', cityInputId:'ownerCity'
+      });
+      await prefillClaimFromUrl();
+      document.getElementById('applicationForm').addEventListener('submit',(event)=>{event.preventDefault();sendApplication(true);});
+      document.getElementById('saveDraftBtn').addEventListener('click',()=>sendApplication(false));
+      document.getElementById('locationBtn').addEventListener('click',async(event)=>{featureHelpers.setButtonLoading(event.currentTarget,true,'Đang lấy vị trí...');try{const loc=await featureHelpers.getLocation();await ownerMapPicker?.updatePosition(loc.lat,loc.lng,true,false);toast.success('Đã lấy vị trí hiện tại.');}catch(error){toast.error(error.message);}finally{featureHelpers.setButtonLoading(event.currentTarget,false);}});
+      await loadApplications();
+    });
+  </script>
+</body>
+</html>
