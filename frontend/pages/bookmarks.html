@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu thích - Thổ Địa Ẩm Thực</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+      .page-header { margin: var(--space-12) 0 var(--space-6) 0; }
+      .page-header h2 { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 850; color: var(--color-secondary); position: relative; display: inline-block; }
+      .page-header h2::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 3px; background: var(--color-primary); border-radius: var(--radius-full); }
+      .empty-state { text-align: center; padding: var(--space-16); color: var(--color-text-light); background: var(--color-bg-soft); border-radius: var(--radius-xl); border: 1.5px dashed var(--color-border); max-width: 500px; margin: 40px auto; }
+      .empty-state p { font-size: var(--font-size-lg); margin-top: var(--space-4); margin-bottom: var(--space-6); font-weight: 550; }
+      .pagination { display: flex; justify-content: center; gap: var(--space-3); margin-top: var(--space-12); align-items: center;}
+      .page-btn { padding: var(--space-2.5) var(--space-5); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; font-weight: 650; background: var(--color-bg-soft); transition: all var(--transition); border-color: rgba(255, 90, 31, 0.1); box-shadow: var(--shadow-sm); font-size: var(--font-size-sm); }
+      .page-btn:hover:not(:disabled) { background: var(--color-primary); color: #fff; border-color: var(--color-primary); transform: translateY(-1px); }
+      .page-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container">
+      <div class="page-header">
+        <h2>❤️ Quán ăn đã lưu</h2>
+      </div>
+
+      <div class="restaurant-grid" id="bookmark-grid"></div>
+
+      <div class="pagination" id="pagination" style="display: none;">
+          <button class="page-btn" id="prevPage">Trước</button>
+          <span id="pageInfo" style="font-weight:600; font-size:14px;"></span>
+          <button class="page-btn" id="nextPage">Tiếp</button>
+      </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/components/toast.js"></script>
+    <script src="/assets/js/bookmarks.js"></script>
+    <script src="/assets/js/components/skeleton.js"></script>
+    <script src="/assets/js/components/card.js"></script>
+    <script src="/assets/js/components/navbar.js"></script>
+    <script>
+      let currentPage = 1;
+      let totalPages = 1;
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        auth.requireLogin();
+        navbar.render();
+        
+        setupEvents();
+        await bookmarkManager.ensureLoaded();
+        fetchResults();
+      });
+
+      function setupEvents() {
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if(currentPage > 1) { currentPage--; fetchResults(); window.scrollTo(0, 0); }
+        });
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if(currentPage < totalPages) { currentPage++; fetchResults(); window.scrollTo(0, 0); }
+        });
+      }
+
+      async function fetchResults() {
+        const grid = document.getElementById('bookmark-grid');
+        skeleton.renderCards(grid, 8);
+        document.getElementById('pagination').style.display = 'none';
+
+        try {
+            const res = await api.get(`/bookmarks?page=${currentPage}&limit=12`);
+            const { data, total, page: resPage, totalPages: tPages } = res.data;
+            
+            currentPage = resPage;
+            totalPages = tPages;
+
+            if(data.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><p>Bạn chưa lưu quán ăn nào.</p><a href='/pages/index.html' class="btn btn--primary">Khám phá ngay</a></div>`;
+            } else {
+                grid.innerHTML = data.map(r => card.render(r)).join('');
+            }
+
+            if (totalPages > 1) {
+                document.getElementById('pagination').style.display = 'flex';
+                document.getElementById('pageInfo').textContent = `Trang ${currentPage} / ${totalPages}`;
+                document.getElementById('prevPage').disabled = currentPage === 1;
+                document.getElementById('nextPage').disabled = currentPage === totalPages;
+            }
+        } catch(e) {
+            grid.innerHTML = `<div class="empty-state"><p>Lỗi khi tải dữ liệu.</p></div>`;
+        }
+      }
+    </script>
+</body>
+</html>

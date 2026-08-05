@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gợi ý quán phù hợp - Thổ Địa Ẩm Thực</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+<style>
+    .recommend-shell{max-width:1100px;margin:42px auto;padding:0 18px 100px}.recommend-hero{background:linear-gradient(135deg,#fff7ed,#fff);border:1px solid var(--color-border);border-radius:28px;padding:32px;box-shadow:var(--shadow-md)}
+    .recommend-hero h1{font-size:clamp(2rem,5vw,3.6rem);margin:0 0 10px;color:var(--color-secondary)}.recommend-hero p{max-width:720px;color:var(--color-text-light);font-size:1.02rem}
+    .recommend-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:26px}.recommend-form .wide{grid-column:1/-1}.choice-row{display:flex;gap:10px;flex-wrap:wrap}.choice-chip{border:1px solid var(--color-border);background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:700}.choice-chip.active{background:var(--color-primary);border-color:var(--color-primary);color:#fff}
+    .recommend-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.recommend-results{margin-top:34px}.recommend-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.match-card{background:#fff;border:1px solid var(--color-border);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}.match-card img{width:100%;height:190px;object-fit:cover}.match-card__body{padding:18px;display:flex;flex-direction:column;gap:10px;flex:1}.match-score{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:7px 11px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:800}.match-card h3{font-size:1.2rem;margin:0}.match-reasons{margin:0;padding-left:18px;color:var(--color-text-light);font-size:.92rem}.match-actions{margin-top:auto;display:flex;gap:8px}.recommend-note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;color:#475569;font-size:.9rem}.empty-panel{text-align:center;padding:40px;border:1px dashed var(--color-border);border-radius:20px;background:#fff}
+    @media(max-width:850px){.recommend-grid{grid-template-columns:1fr 1fr}}@media(max-width:640px){.recommend-shell{margin-top:22px}.recommend-hero{padding:22px}.recommend-form{grid-template-columns:1fr}.recommend-form .wide{grid-column:auto}.recommend-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+  <main class="recommend-shell">
+    <section class="recommend-hero">
+      <span class="eyebrow">Gợi ý theo nhu cầu cá nhân</span>
+      <h1>Hôm nay bạn muốn ăn gì?</h1>
+      <p>FlavorMap rút gọn danh sách quán dựa trên khu vực, ngân sách, loại món, thời điểm và hoàn cảnh đi ăn. Kết quả chỉ lấy từ các quán đã được xác minh và công khai.</p>
+
+      <form id="recommendForm" class="recommend-form">
+        <div class="form-group">
+          <label class="form-label" for="recCity">Khu vực</label>
+          <select id="recCity" class="form-input">
+            <option value="">Tất cả thành phố</option><option>Hà Nội</option><option>Hồ Chí Minh</option><option>Đà Nẵng</option><option>Hải Phòng</option><option>Cần Thơ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recCategory">Loại món</label>
+          <select id="recCategory" class="form-input">
+            <option value="">Món nào cũng được</option><option value="Cơm">Món Việt (bún, phở, cơm...)</option><option value="Cafe">Cafe</option><option value="Đồ ăn vặt">Đồ ăn vặt</option><option value="Nước">Đồ uống</option><option value="Hải sản">Hải sản</option><option value="Khác">Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recBudget">Ngân sách tối đa mỗi người</label>
+          <select id="recBudget" class="form-input">
+            <option value="0">Không giới hạn</option><option value="50000">Dưới 50.000đ</option><option value="100000" selected>Dưới 100.000đ</option><option value="200000">Dưới 200.000đ</option><option value="500000">Dưới 500.000đ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recRadius">Khoảng cách tối đa</label>
+          <select id="recRadius" class="form-input"><option value="3">3 km</option><option value="5" selected>5 km</option><option value="10">10 km</option><option value="20">20 km</option></select>
+        </div>
+        <div class="form-group wide">
+          <label class="form-label">Bạn đi ăn trong hoàn cảnh nào?</label>
+          <div class="choice-row" id="contextChoices">
+            <button type="button" class="choice-chip active" data-value="friends">Nhóm bạn</button>
+            <button type="button" class="choice-chip" data-value="solo">Một mình</button>
+            <button type="button" class="choice-chip" data-value="date">Hẹn hò</button>
+            <button type="button" class="choice-chip" data-value="family">Gia đình</button>
+          </div>
+        </div>
+        <div class="form-group wide">
+          <label class="form-label">Ưu tiên chính</label>
+          <div class="choice-row" id="priorityChoices">
+            <button type="button" class="choice-chip active" data-value="balanced">Cân bằng</button>
+            <button type="button" class="choice-chip" data-value="near">Gần nhất</button>
+            <button type="button" class="choice-chip" data-value="rating">Đánh giá cao</button>
+            <button type="button" class="choice-chip" data-value="budget">Tiết kiệm</button>
+            <button type="button" class="choice-chip" data-value="quiet">Ít đông</button>
+          </div>
+        </div>
+        <div class="recommend-actions wide">
+          <button id="useLocationBtn" type="button" class="btn btn--outline">📍 Dùng vị trí hiện tại</button>
+          <button id="recommendBtn" type="submit" class="btn btn--primary">✨ Tìm quán phù hợp</button>
+          <span id="locationStatus" class="text-muted"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="recommend-results" aria-live="polite">
+      <div class="section-heading"><div><span class="eyebrow">Kết quả</span><h2>Top quán phù hợp nhất</h2></div></div>
+      <div id="recommendSummary" class="recommend-note" hidden></div>
+      <div id="recommendGrid" class="recommend-grid"><div class="empty-panel" style="grid-column:1/-1">Chọn nhu cầu của bạn rồi nhấn “Tìm quán phù hợp”.</div></div>
+    </section>
+
+    <div id="voteSelectionBar" class="vote-selection-bar" hidden>
+      <div class="vote-selection-bar__text">Đã chọn <strong id="voteSelectionCount">0</strong> quán để bình chọn.</div>
+      <div class="vote-selection-bar__actions">
+        <button type="button" id="clearVoteSelection" class="btn btn--outline">Bỏ chọn</button>
+        <a href="/pages/vote-room.html" id="openVoteRoom" class="btn btn--primary">Mở phòng bình chọn</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/navbar.js"></script>
+  <script src="/assets/js/feature-helpers.js"></script>
+  <script>
+    const VOTE_SELECTION_KEY = 'flavormapVoteSelection';
+    const storedVoteIds = (() => {
+      try { return JSON.parse(localStorage.getItem(VOTE_SELECTION_KEY) || '[]').map(String); }
+      catch { return []; }
+    })();
+    const state = { context: 'friends', priority: 'balanced', location: null, selectedIds: new Set(storedVoteIds) };
+    const money = new Intl.NumberFormat('vi-VN');
+    const fallbackImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80';
+
+    function setupChoiceGroup(id, stateKey) {
+      document.querySelectorAll(`#${id} .choice-chip`).forEach((button) => button.addEventListener('click', () => {
+        document.querySelectorAll(`#${id} .choice-chip`).forEach((item) => item.classList.remove('active'));
+        button.classList.add('active'); state[stateKey] = button.dataset.value;
+      }));
+    }
+
+    function isOpenNow(item) {
+      if (item.IsTemporarilyClosed) return false;
+      if (!item.OpeningTime || !item.ClosingTime) return true;
+      const now = new Date(); const minutes = now.getHours() * 60 + now.getMinutes();
+      const parse = (value) => { const [h,m] = String(value).slice(0,5).split(':').map(Number); return h*60+m; };
+      const open = parse(item.OpeningTime); const close = parse(item.ClosingTime);
+      return close >= open ? minutes >= open && minutes <= close : minutes >= open || minutes <= close;
+    }
+
+    function calculate(item, inputs) {
+      let score = 0; const reasons = [];
+      if (!inputs.category || item.Category === inputs.category) { score += inputs.category ? 25 : 15; if (inputs.category) reasons.push(`Đúng nhóm món bạn chọn: ${utils.categoryLabel(item.Category)}`); }
+      const budgetFits = !inputs.budget || Number(item.PriceMin || 0) <= inputs.budget;
+      if (budgetFits) { score += 20; reasons.push(`Mức giá từ ${money.format(item.PriceMin || 0)}đ phù hợp ngân sách`); }
+      if (isOpenNow(item)) { score += 12; reasons.push('Đang trong giờ hoạt động'); }
+      const rating = Number(item.Rating || 0); score += Math.min(15, rating * 3);
+      if (rating >= 4.5) reasons.push(`Được đánh giá cao: ${rating.toFixed(1)}/5`);
+      const distance = Number(item.DistanceKm);
+      if (Number.isFinite(distance)) {
+        const distanceScore = Math.max(0, 20 * (1 - distance / Math.max(inputs.radius, 1)));
+        score += distanceScore; reasons.push(`Cách bạn khoảng ${distance.toFixed(1)} km`);
+      } else score += 8;
+      if (item.CrowdStatus === 'quiet') { score += inputs.priority === 'quiet' ? 12 : 5; reasons.push('Hiện được ghi nhận là khá vắng'); }
+      if (item.VerificationStatus === 'Verified') { score += 5; reasons.push('Thông tin quán đã được xác minh'); }
+      if (state.context === 'solo' && Number(item.PriceMin || 0) <= 70000) score += 4;
+      if (['family','date','friends'].includes(state.context) && rating >= 4.3) score += 4;
+      if (inputs.priority === 'near' && Number.isFinite(distance)) score += Math.max(0, 15 - distance);
+      if (inputs.priority === 'rating') score += rating * 2;
+      if (inputs.priority === 'budget') score += Math.max(0, 10 - Number(item.PriceMin || 0) / 20000);
+      return { ...item, matchScore: Math.max(0, Math.min(99, Math.round(score))), matchReasons: reasons.slice(0,4) };
+    }
+
+    function render(items) {
+      const grid = document.getElementById('recommendGrid');
+      if (!items.length) { grid.innerHTML = '<div class="empty-panel" style="grid-column:1/-1"><h3>Chưa tìm thấy quán phù hợp</h3><p>Hãy tăng ngân sách, bán kính hoặc bỏ bớt điều kiện.</p></div>'; return; }
+      grid.innerHTML = items.slice(0,6).map((item) => `
+        <article class="match-card">
+          <img src="${utils.escapeHtml(item.BannerUrl || fallbackImage)}" alt="${utils.escapeHtml(item.Name)}" onerror="this.src='${fallbackImage}'">
+          <div class="match-card__body">
+            <span class="match-score">✓ Phù hợp ${item.matchScore}%</span>
+            <h3>${utils.escapeHtml(item.Name)}</h3>
+            <p style="margin:0;color:var(--color-text-light)">${utils.escapeHtml(item.Address || '')}</p>
+            <ul class="match-reasons">${item.matchReasons.map((reason) => `<li>${utils.escapeHtml(reason)}</li>`).join('')}</ul>
+            <div class="match-actions">
+              <a class="btn btn--primary" href="/pages/restaurant.html?slug=${encodeURIComponent(item.Slug)}">Xem quán</a>
+              <button type="button" class="btn btn--outline match-vote-btn ${state.selectedIds.has(String(item.Id)) ? 'selected' : ''}" data-vote-id="${utils.escapeHtml(String(item.Id))}">${state.selectedIds.has(String(item.Id)) ? 'Đã chọn' : 'Chọn để bình chọn'}</button>
+            </div>
+          </div>
+        </article>`).join('');
+    }
+
+    function saveVoteSelection() {
+      localStorage.setItem(VOTE_SELECTION_KEY, JSON.stringify([...state.selectedIds]));
+      updateVoteSelectionBar();
+    }
+
+    function updateVoteSelectionBar() {
+      const count = state.selectedIds.size;
+      const bar = document.getElementById('voteSelectionBar');
+      const countEl = document.getElementById('voteSelectionCount');
+      if (!bar || !countEl) return;
+      countEl.textContent = String(count);
+      bar.hidden = false;
+      bar.classList.toggle('visible', count > 0);
+    }
+
+    function toggleVoteSelection(id, button) {
+      const key = String(id);
+      if (state.selectedIds.has(key)) {
+        state.selectedIds.delete(key);
+        button?.classList.remove('selected');
+        if (button) button.textContent = 'Chọn để bình chọn';
+      } else {
+        if (state.selectedIds.size >= 20) {
+          toast.error('Mỗi phòng chỉ được chọn tối đa 20 quán.');
+          return;
+        }
+        state.selectedIds.add(key);
+        button?.classList.add('selected');
+        if (button) button.textContent = 'Đã chọn';
+      }
+      saveVoteSelection();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      navbar.render(); featureHelpers.rememberCity(document.getElementById('recCity'));
+      updateVoteSelectionBar();
+      document.getElementById('recommendGrid').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-vote-id]');
+        if (!button) return;
+        toggleVoteSelection(button.dataset.voteId, button);
+      });
+      document.getElementById('clearVoteSelection').addEventListener('click', () => {
+        state.selectedIds.clear();
+        saveVoteSelection();
+        document.querySelectorAll('[data-vote-id]').forEach((button) => {
+          button.classList.remove('selected');
+          button.textContent = 'Chọn để bình chọn';
+        });
+      });
+      setupChoiceGroup('contextChoices','context'); setupChoiceGroup('priorityChoices','priority');
+      document.getElementById('useLocationBtn').addEventListener('click', async (event) => {
+        featureHelpers.setButtonLoading(event.currentTarget,true,'Đang lấy vị trí...');
+        try { state.location = await featureHelpers.getLocation(); document.getElementById('locationStatus').textContent = 'Đã dùng vị trí hiện tại.'; toast.success('Đã lấy vị trí.'); }
+        catch(error){ toast.error(error.message); }
+        finally { featureHelpers.setButtonLoading(event.currentTarget,false); }
+      });
+      document.getElementById('recommendForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); const button = document.getElementById('recommendBtn'); featureHelpers.setButtonLoading(button,true,'Đang phân tích...');
+        const city = document.getElementById('recCity').value; const category = document.getElementById('recCategory').value;
+        const budget = Number(document.getElementById('recBudget').value || 0); const radius = Number(document.getElementById('recRadius').value || 5);
+        const params = new URLSearchParams({ limit:'100' }); if(city) params.set('city',city); if(category) params.set('category',category); if(budget) params.set('priceMax',String(budget));
+        if(state.location){ params.set('lat',state.location.lat); params.set('lng',state.location.lng); params.set('radius',String(radius)); }
+        try {
+          const response = await api.get(`/restaurants/filter?${params}`); const rows = response.data?.data || [];
+          const ranked = rows.map((item) => calculate(item,{category,budget,radius})).sort((a,b)=>b.matchScore-a.matchScore);
+          const summary = document.getElementById('recommendSummary'); summary.hidden=false;
+          summary.textContent = `Đã xếp hạng ${rows.length} quán đã xác minh theo ${city || 'mọi khu vực'}, ngân sách ${budget ? `dưới ${money.format(budget)}đ/người` : 'không giới hạn'} và ưu tiên ${document.querySelector('#priorityChoices .active').textContent.toLowerCase()}.`;
+          render(ranked);
+        } catch(error){ toast.error(error.message); render([]); }
+        finally { featureHelpers.setButtonLoading(button,false); }
+      });
+    });
+  </script>
+</body>
+</html>
